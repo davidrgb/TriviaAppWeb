@@ -1,0 +1,44 @@
+.banner {
+    width: 100%;
+    font-size: 150%;
+    text-align: center;
+    color: white;
+    background-color: darkblue;
+}
+
+.navbar-title {
+    font-size: 125%;
+    align-self: center;
+}
+
+body {
+    background-color: #21242b;
+}
+
+li {
+    margin-left: 15px;
+}
+
+input {
+    display: block;
+    margin: 2px 0;
+    padding: 8px 2px;
+    border-width: 0 0 2px 0;
+    width: 100%;
+}
+
+.modal-pre-auth {
+    display: block;
+}
+
+.modal-post-auth {
+    display: none;
+}
+
+.secondary {
+    color: #6c757d;
+}
+
+.dark {
+    color: #21242b;
+}
