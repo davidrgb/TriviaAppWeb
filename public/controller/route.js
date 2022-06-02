@@ -12,9 +12,9 @@ export const routePathname = {
 
 export const routes = [
     {pathname: routePathname.HOME, page: Home.home_page},
-    {pathname: routePathname.LOBBIES, page: User.lobbies_page},
-    {pathname: routePathname.CATEGORIES, page: Purchase.categories_page},
-    {pathname: routePathname.QUESTIONS, page: Cart.questions_page},
+    {pathname: routePathname.LOBBIES, page: Lobbies.lobbies_page},
+    {pathname: routePathname.CATEGORIES, page: Categories.categories_page},
+    {pathname: routePathname.QUESTIONS, page: Questions.questions_page},
 ];
 
 export function routing(pathname, hash) {

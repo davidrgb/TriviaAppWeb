@@ -28,12 +28,14 @@
         -->
   <script defer src="/__/firebase/init.js?useEmulator=true"></script>
 
+  <script type="module" src="app.js"></script>
+
   <title>Trivia App - Admin Portal</title>
 </head>
 
 <body>
   <!-- Top Menus -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-light">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-light" id="navbar">
     <div class="container-fluid">
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,15 +46,15 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <button id="menu-home" class="btn btn-outline-light">Lobbies</button>
+              <button id="menu-lobbies" class="btn btn-outline-light">Lobbies</button>
             </li>
             <li class="nav-item user">
               <!--User-->
-              <button id="menu-purchases" class="btn btn-outline-light ">Categories</button>
+              <button id="menu-categories" class="btn btn-outline-light ">Categories</button>
             </li>
             <li class="nav-item admin">
               <!--Admin-->
-              <button id="menu-users" class="btn btn-outline-light ">Questions</button>
+              <button id="menu-questions" class="btn btn-outline-light ">Questions</button>
             </li>
           </ul>
         </div>

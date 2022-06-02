@@ -1,16 +1,17 @@
 import * as Route from '../controller/route.js'
+import * as Util from './util.js'
 
 
 export function addEventListeners() {
-    Element.menuUsers.addEventListener('click', async () => {
-        history.pushState(null, null, Route.routePathname.USERS)
-        const label = Util.disableButton(Element.menuUsers);
-        await users_page();
-        Util.enableButton(Element.menuUsers, label);
+    Element.menuLobbies.addEventListener('click', async () => {
+        history.pushState(null, null, Route.routePathname.LOBBIES)
+        const label = Util.disableButton(Element.menuLobbies);
+        await lobbies_page();
+        Util.enableButton(Element.menuLobbies, label);
     })
 }
 
-export async function home_page() {
+export async function lobbies_page() {
 
     //if (!Auth.currentUser) return;
 

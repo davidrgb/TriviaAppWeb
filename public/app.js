@@ -20,10 +20,9 @@ window.addEventListener('popstate', e => {
 })
 
 //Auth.addEventListeners();
-Home.addEventListeners();
 Lobbies.addEventListeners();
-Categories.addEventListeners();
-Questions.addEventListeners();
+//Categories.addEventListeners();
+//Questions.addEventListeners();
 //Home.addAdminEventListeners();
 
 /*if (Auth.currentUser) {
