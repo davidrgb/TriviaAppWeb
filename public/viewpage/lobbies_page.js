@@ -18,7 +18,7 @@ export async function lobbies_page() {
     Element.menu.style.display = "block";
 
     let html = `
-        <h1>Lobbies</h1>
+        <h1 class="text-light">Lobbies</h1>
     `;
 
     /*let lobbyList;

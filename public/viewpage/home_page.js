@@ -1,7 +1,9 @@
 import * as Route from '../controller/route.js';
-import * as Lobbies from './lobbies_page.js';
 import * as Util from './util.js';
 import * as Element from './element.js';
+import * as Lobbies from './lobbies_page.js';
+import * as Categories from './categories_page.js';
+import * as Questions from './questions_page.js';
 
 export async function home_page() {
 
@@ -51,5 +53,21 @@ export async function home_page() {
         const label = Util.disableButton(homeLobbies);
         await Lobbies.lobbies_page();
         Util.enableButton(homeLobbies, label);
+    });
+
+    const homeCategories = document.getElementById('home-categories');
+    homeCategories.addEventListener('click', async () => {
+        history.pushState(null, null, Route.routePathname.CATEGORIES);
+        const label = Util.disableButton(homeCategories);
+        await Categories.categories_page();
+        Util.enableButton(homeCategories, label);
+    });
+
+    const homeQuestions = document.getElementById('home-questions');
+    homeQuestions.addEventListener('click', async () => {
+        history.pushState(null, null, Route.routePathname.QUESTIONS);
+        const label = Util.disableButton(homeQuestions);
+        await Questions.questions_page();
+        Util.enableButton(homeQuestions, label);
     });
 }
