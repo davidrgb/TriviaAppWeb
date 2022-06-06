@@ -1,6 +1,6 @@
 import * as Route from '../controller/route.js'
 import * as Util from './util.js'
-
+import * as Element from './element.js'
 
 export function addEventListeners() {
     Element.menuLobbies.addEventListener('click', async () => {
@@ -15,11 +15,13 @@ export async function lobbies_page() {
 
     //if (!Auth.currentUser) return;
 
+    Element.menu.style.display = "block";
+
     let html = `
         <h1>Lobbies</h1>
     `;
 
-    let lobbyList;
+    /*let lobbyList;
     try {
         lobbyList = await FirebaseController.getLobbyList();
         html += `
@@ -42,11 +44,11 @@ export async function lobbies_page() {
     } catch (e) {
         if (Constant.DEV) console.log(e);
         Util.info('Error getLobbyList', JSON.stringify(e));
-    }
+    }*/
 
     Element.root.innerHTML = html;
 
-    const deleteForms = document.getElementsByClassName('form-delete-lobby');
+    /*const deleteForms = document.getElementsByClassName('form-delete-lobby');
     for (let i = 0; i < deleteForms.length; i++) {
         deleteForms[i].addEventListener('submit', async e => {
             e.preventDefault();
@@ -92,7 +94,7 @@ export async function lobbies_page() {
 
             Util.enableButton(button, label);
         })
-    }
+    }*/
 }
 
 function buildLobbyRow(lobby) {
