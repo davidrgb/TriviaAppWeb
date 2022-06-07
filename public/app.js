@@ -1,6 +1,5 @@
-import * as Route from './controller/route.js'
-//import * as Auth from './controller/auth.js'
-import * as Home from '../viewpage/home_page.js'
+import * as Route from '../controller/route.js'
+import * as Auth from '../controller/auth.js'
 import * as Lobbies from '../viewpage/lobbies_page.js'
 import * as Categories from '../viewpage/categories_page.js'
 import * as Questions from '../viewpage/questions_page.js'
@@ -19,14 +18,7 @@ window.addEventListener('popstate', e => {
     Route.routing(pathname, hash);
 })
 
-//Auth.addEventListeners();
+Auth.addEventListeners();
 Lobbies.addEventListeners();
 Categories.addEventListeners();
 Questions.addEventListeners();
-//Home.addAdminEventListeners();
-
-/*if (Auth.currentUser) {
-    if (Constant.adminEmails.includes(Auth.currentUser.email)) {
-        Home.addAdminEventListeners();
-    }
-}*/
