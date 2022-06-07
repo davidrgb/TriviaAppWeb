@@ -1,10 +1,10 @@
-export const DEV = true;
+exports.DEV = true;
 
-export const adminEmails = [
+exports.adminEmails = [
     'admin@test.com',
 ]
 
-export const collectionNames = {
+exports.collectionNames = {
     PLAYERS: 'players',
     LOBBIES: 'lobbies',
     CATEGORIES: 'categories',

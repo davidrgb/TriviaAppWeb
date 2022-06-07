@@ -1,7 +1,10 @@
 import * as Auth from '../controller/auth.js';
+import * as FirebaseController from '../controller/firebase_controller.js';
 import * as Route from '../controller/route.js';
 import * as Util from './util.js';
 import * as Element from './element.js';
+import * as Constant from '../model/constant.js';
+import { Lobby } from '../model/Lobby.js';
 
 export function addEventListeners() {
     Element.menuLobbies.addEventListener('click', async () => {
@@ -20,6 +23,7 @@ export async function lobbies_page() {
 
     let html = `
         <h1 class="text-light">Lobbies</h1>
+        <button class="btn btn-outline-light" id="add-button">Add Lobby</button>
     `;
 
     /*let lobbyList;
@@ -96,6 +100,29 @@ export async function lobbies_page() {
             Util.enableButton(button, label);
         })
     }*/
+
+    const addButton = document.getElementById('add-button');
+    addButton.addEventListener('click', async () => {
+        const id = Auth.currentUser.uid;
+        const timestamp = Date.now();
+        const open = true;
+        const players = [Auth.currentUser.uid];
+        const category = "Test";
+        const questions = [];
+        //const lobby = new Lobby({ id, timestamp, open, players, category, questions});
+        const data = {id, timestamp, open, players, category, questions};
+        const lobby = new Lobby(data);
+        
+        const label = Util.disableButton(addButton);
+
+        try {
+            await FirebaseController.addLobby(lobby);
+        } catch (e) {
+            if (Constant.DEV) console.log(e);
+        }
+
+        Util.enableButton(addButton, label);
+    });
 }
 
 function buildLobbyRow(lobby) {
