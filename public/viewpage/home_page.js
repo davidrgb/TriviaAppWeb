@@ -72,35 +72,49 @@ export async function home_page() {
     else {
         html = `
             <div class="d-flex justify-content-center pb-5" style="width: 100%;">
-                <h3 class="text-light">Admin Portal</h1>
+                <h3 class="text-light">Admin Portal</h3>
             </div>
-            <div class="d-flex flex-row justify-content-between">
-                <div class="card text-center bg-dark border border-light" style="width: 24rem;">
-                    <div class="card-img-top p-3">
-                        <img src="../svg/house.svg" alt="Lobby" style="filter: invert(100%); width: 75%; height: 75%;">
+            <div class="d-flex flex-row justify-content-center" style="width: 100%;">
+                <div class="d-flex flex-row justify-content-between pb-5" style="width: 75%;">
+                    <div class="card text-center bg-dark border border-light" style="width: 24rem;">
+                        <div class="card-img-top p-3">
+                            <div class="align-items-center">
+                                <img src="../svg/house.svg" alt="Lobby" style="filter: invert(100%); width: 75%; height: 75%;">
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-outline-light" style="width: 90%;" id="home-lobbies">Go to Lobby Management</button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <button class="btn btn-lg btn-block btn-outline-light" id="home-lobbies">Go to Lobby Management</button>
-                    </div>
-                </div>
 
-                <div class="card text-center bg-dark border border-light" style="width: 24rem;">
-                    <div class="card-img-top p-3">
-                        <img src="../svg/tags.svg" alt="Lobby" style="filter: invert(100%); width: 75%; height: 75%;">
+                    <div class="card text-center bg-dark border border-light" style="width: 24rem;">
+                        <div class="card-img-top p-3">
+                            <div class="align-items-center">
+                                <img src="../svg/tags.svg" alt="Lobby" style="filter: invert(100%); width: 75%; height: 75%;">
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-outline-light" style="width: 90%;" id="home-categories">Go to Category Management</button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <button class="btn btn-lg btn-block btn-outline-light" id="home-categories">Go to Category Management</button>
-                    </div>
-                </div>
 
-                <div class="card text-center bg-dark border border-light" style="width: 24rem;">
-                    <div class="card-img-top p-3">
-                        <img src="../svg/question-circle.svg" alt="Lobby" style="filter: invert(100%); width: 75%; height: 75%;">
-                    </div>
-                    <div class="card-body">
-                        <button class="btn btn-lg btn-block btn-outline-light" id="home-questions">Go to Question Management</button>
+                    <div class="card text-center bg-dark border border-light" style="width: 24rem;">
+                        <div class="card-img-top p-3">
+                            <div class="align-items-center">
+                                <img src="../svg/question-circle.svg" alt="Lobby" style="filter: invert(100%); width: 75%; height: 75%;">
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-outline-light" style="width: 90%;" id="home-questions">Go to Question Management</button>
+                        </div>
                     </div>
                 </div>
+            </div>
+            <div class="d-flex justify-content-center pb-3" style="width: 100%;">
+                <button class="btn btn-outline-danger" id="home-signout">Sign Out</button>
+            </div>
+            <div class="d-flex justify-content-center" style="width: 100%;">
+                <h5 class="text-danger" id="home-error"></h5>
             </div>
         `;
 
@@ -129,5 +143,18 @@ export async function home_page() {
             await Questions.questions_page();
             Util.enableButton(homeQuestions, label);
         });
+
+        const homeSignOut = document.getElementById('home-signout');
+        const homeError = document.getElementById('home-error');
+        homeSignOut.addEventListener('click', async () => {
+            try {
+                homeError.style.display = 'none';
+                await FirebaseController.signOut();
+            } catch (e) {
+                if (Constant.DEV) console.log(e);
+                homeError.innerHTML = 'Error: Please Try Again';
+                homeError.style.display = 'block';
+            }
+        })
     }
 }

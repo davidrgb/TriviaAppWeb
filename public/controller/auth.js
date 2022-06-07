@@ -34,6 +34,17 @@ export function addEventListeners() {
             Route.routing(window.location.pathname, window.location.hash);
         }
     })
+
+    Element.menuSignOut.addEventListener('click', async () => {
+        try {
+            Element.menuError.style.display = 'none';
+            await FirebaseController.signOut();
+        } catch (e) {
+            if (Constant.DEV) console.log(e);
+            Element.menuError.innerHTML = 'Error: Please Try Again';
+            Element.menuError.style.display = 'block';
+        }
+    })
 }
 
 export function isAdmin() {

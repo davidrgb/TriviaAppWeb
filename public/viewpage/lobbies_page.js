@@ -1,6 +1,7 @@
-import * as Route from '../controller/route.js'
-import * as Util from './util.js'
-import * as Element from './element.js'
+import * as Auth from '../controller/auth.js';
+import * as Route from '../controller/route.js';
+import * as Util from './util.js';
+import * as Element from './element.js';
 
 export function addEventListeners() {
     Element.menuLobbies.addEventListener('click', async () => {
@@ -13,7 +14,7 @@ export function addEventListeners() {
 
 export async function lobbies_page() {
 
-    //if (!Auth.currentUser) return;
+    if (!Auth.currentUser) return;
 
     Element.menu.style.display = "block";
 
