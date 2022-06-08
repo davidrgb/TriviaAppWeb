@@ -24,3 +24,15 @@ export async function getLobbyList() {
     });
     return lobbies;
 }
+
+const cf_getFirstLobbyPage = firebase.functions().httpsCallable('cf_getFirstLobbyPage');
+export async function getFirstLobbyPage() {
+    const lobbies = [];
+    const result = await cf_getFirstLobbyPage();
+    result.data.forEach(data => {
+        const l = new Lobby(data);
+        l.docId = data.docId;
+        lobbies.push(l);
+    });
+    return lobbies;
+}

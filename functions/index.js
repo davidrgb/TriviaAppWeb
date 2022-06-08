@@ -18,6 +18,7 @@ const Constant = require('./constant.js');
 
 exports.cf_getLobbyList = functions.https.onCall(getLobbyList);
 exports.cf_addLobby = functions.https.onCall(addLobby);
+exports.cf_getFirstLobbyPage = functions.https.onCall(getFirstLobbyPage);
 
 function isAdmin(email) {
     return Constant.adminEmails.includes(email);
@@ -60,5 +61,30 @@ async function addLobby(data, context) {
     } catch (e) {
         if (Constant.DEV) console.log(e);
         throw new functions.https.HttpsError('internal', 'addLobby failed');
+    }
+}
+
+async function getFirstLobbyPage(data, context) {
+    if (!isAdmin(context.auth.token.email)) {
+        if (Constant.DEV) console.log('not admin', context.auth.token.email);
+        throw new functions.https.HttpsError('unauthenticated', 'Only admins may invoke this function');
+    }
+
+    try {
+        let lobbies = [];
+        const snapShot = await admin.firestore().collection(Constant.collectionNames.LOBBIES)
+            .orderBy('timestamp')
+            .limit(10)
+            .get();
+        snapShot.forEach(doc => {
+            const { id, name, host, timestamp, open, players, category, questions} = doc.data();
+            const l = { id, name, host, timestamp, open, players, category, questions };
+            l.docId = doc.id;
+            lobbies.push(l);
+        });
+        return lobbies;
+    } catch (e) {
+        if (Constant.DEV) console.log(e);
+        throw new functions.https.HttpsError('internal', 'addProduct failed');
     }
 }
