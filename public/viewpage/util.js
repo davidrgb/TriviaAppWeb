@@ -1,7 +1,7 @@
 export function disableButton(button) {
     button.disabled = true;
     const label = button.innerHTML;
-    button.innerHTML = 'Wait...'
+    button.innerHTML = 'Loading...'
     return label;
 }
 

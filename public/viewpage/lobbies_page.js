@@ -25,6 +25,8 @@ export async function lobbies_page() {
 
     if (!Auth.currentUser) return;
 
+    showSpinner();
+
     lobbyList = await FirebaseController.getFirstLobbyPage();
     page = 1;
     showPrev = false;
@@ -132,6 +134,7 @@ async function buildHTML() {
 
     prevButton.addEventListener('click', async () => {
         const label = Util.disableButton(prevButton);
+        showSpinner();
         page--;
         lobbyList = await FirebaseController.getPreviousLobbyPage();
         showPrev = await FirebaseController.getShowPrevious();
@@ -142,6 +145,7 @@ async function buildHTML() {
 
     nextButton.addEventListener('click', async () => {
         const label = Util.disableButton(nextButton);
+        showSpinner();
         page++;
         lobbyList = await FirebaseController.getNextLobbyPage();
         showPrev= true;
@@ -169,4 +173,10 @@ function buildLobbyRow(lobby) {
             </td>
         </tr>
     `;
+}
+
+function showSpinner() {
+    Element.root.innerHTML = `
+        <div class="spinner-border text-light" role="status"></div>
+    `
 }
