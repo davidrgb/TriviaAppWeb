@@ -64,12 +64,18 @@ async function buildHTML() {
         if (Constant.DEV) console.log(e);
     }
 
+    if (lobbyList.length === 0) {
+        html += `
+            <h5 class="text-light">No lobbies to retrieve.</h5>
+        `
+    }
+
     html += `
     <nav class="d-flex justify-content-center align-items-center">
         <ul class="pagination text-center align-items-center">
     `;
 
-    if (showPrev) {
+    if (showPrev.data === true) {
         html += `<li class="page-item"><button class="btn btn-outline-light" id="prev" style="width: 100px;">Previous</button></li>`;
     }
     else {
@@ -77,7 +83,7 @@ async function buildHTML() {
     }
     html += `<li class="page-item text-center text-light">${page}</li>`;
 
-    if (showNext) {
+    if (showNext.data === true) {
         html += `<li class="page-item"><button class="btn btn-outline-light" id="next" style="width: 100px;">Next</button></li>`;
     }
     else {
@@ -123,9 +129,13 @@ async function buildHTML() {
             if (!window.confirm("Press OK to confirm deletion.")) return;
             const button = e.target.getElementsByTagName('button')[0];
             const label = Util.disableButton(button);
-            await FirebaseController.deleteLobby(e.target.docId.value);
+            showSpinner();
+            lobbyList = await FirebaseController.deleteLobby(e.target.docId.value);
+            showPrev = await FirebaseController.getShowPrevious();
+            showNext = await FirebaseController.getShowNext();
+            page = await FirebaseController.getPage();
             Util.enableButton(button, label);
-            await lobbies_page();
+            await buildHTML();
         })
     }
 
@@ -135,10 +145,10 @@ async function buildHTML() {
     prevButton.addEventListener('click', async () => {
         const label = Util.disableButton(prevButton);
         showSpinner();
-        page--;
         lobbyList = await FirebaseController.getPreviousLobbyPage();
         showPrev = await FirebaseController.getShowPrevious();
         showNext = true;
+        page = await FirebaseController.getPage();
         Util.enableButton(prevButton, label);
         await buildHTML();
     });
@@ -146,10 +156,10 @@ async function buildHTML() {
     nextButton.addEventListener('click', async () => {
         const label = Util.disableButton(nextButton);
         showSpinner();
-        page++;
         lobbyList = await FirebaseController.getNextLobbyPage();
         showPrev= true;
         showNext = await FirebaseController.getShowNext();
+        page = await FirebaseController.getPage();
         Util.enableButton(nextButton, label);
         await buildHTML();
     })
