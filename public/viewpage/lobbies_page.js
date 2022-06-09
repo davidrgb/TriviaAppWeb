@@ -26,6 +26,7 @@ export async function lobbies_page() {
     if (!Auth.currentUser) return;
 
     lobbyList = await FirebaseController.getFirstLobbyPage();
+    page = 1;
     showPrev = false;
     showNext = await FirebaseController.getShowNext();
 
