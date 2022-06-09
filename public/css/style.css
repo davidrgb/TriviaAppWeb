@@ -19,6 +19,10 @@ li {
     margin-right: 15px;
 }
 
+td {
+    vertical-align: middle;
+}
+
 input {
     display: block;
     margin: 2px 0;
