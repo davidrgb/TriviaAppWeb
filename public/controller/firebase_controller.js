@@ -112,3 +112,8 @@ export async function getPreviousLobbyPage() {
     showNext = true;
     return lobbies;
 }
+
+const cf_deleteLobby = firebase.functions().httpsCallable('cf_deleteLobby');
+export async function deleteLobby(docId) {
+    await cf_deleteLobby({docId});
+}

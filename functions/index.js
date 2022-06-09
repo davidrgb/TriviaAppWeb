@@ -24,6 +24,7 @@ exports.cf_getNextLobbyPage = functions.https.onCall(getNextLobbyPage);
 exports.cf_getPreviousLobbyPage = functions.https.onCall(getPreviousLobbyPage);
 exports.cf_checkNextLobbyPage = functions.https.onCall(checkNextLobbyPage);
 exports.cf_checkPreviousLobbyPage = functions.https.onCall(checkPreviousLobbyPage);
+exports.cf_deleteLobby = functions.https.onCall(deleteLobby);
 
 function isAdmin(email) {
     return Constant.adminEmails.includes(email);
@@ -226,4 +227,10 @@ async function getPreviousLobbyPage(data, context) {
         if (Constant.DEV) console.log(e);
         throw new functions.https.HttpsError('internal', 'getNextPage failed');
     }
+}
+
+async function deleteLobby(data, context) {
+    await admin.firestore().collection(Constant.collectionNames.LOBBIES)
+                    .doc(data.docId)
+                    .delete();
 }

@@ -114,6 +114,19 @@ async function buildHTML() {
         await lobbies_page();
     });
 
+    const deleteForms = document.getElementsByClassName('form-delete-lobby');
+    for (let i = 0; i < deleteForms.length; i++) {
+        deleteForms[i].addEventListener('submit', async e => {
+            e.preventDefault();
+            if (!window.confirm("Press OK to confirm deletion.")) return;
+            const button = e.target.getElementsByTagName('button')[0];
+            const label = Util.disableButton(button);
+            await FirebaseController.deleteLobby(e.target.docId.value);
+            Util.enableButton(button, label);
+            await lobbies_page();
+        })
+    }
+
     const prevButton = document.getElementById('prev');
     const nextButton = document.getElementById('next');
 
@@ -124,7 +137,7 @@ async function buildHTML() {
         showPrev = await FirebaseController.getShowPrevious();
         showNext = true;
         Util.enableButton(prevButton, label);
-        buildHTML();
+        await buildHTML();
     });
 
     nextButton.addEventListener('click', async () => {
@@ -134,7 +147,7 @@ async function buildHTML() {
         showPrev= true;
         showNext = await FirebaseController.getShowNext();
         Util.enableButton(nextButton, label);
-        buildHTML();
+        await buildHTML();
     })
 
     Element.menu.style.display = "block";
@@ -150,7 +163,7 @@ function buildLobbyRow(lobby) {
             <td>${lobby.players.length}</td>
             <td>
                 <form class="form-delete-lobby" method="post" style="display: inline-block;">
-                    <input type="hidden" name="uid" value="${lobby.id}">
+                    <input type="hidden" name="docId" value="${lobby.docId}">
                     <button type="submit" class="btn btn-outline-danger">Delete</button>
                 </form>
             </td>
