@@ -5,7 +5,6 @@ import * as Util from './util.js';
 import * as Element from './element.js';
 import * as Constant from '../model/constant.js';
 import { Category } from '../model/Category.js';
-import { Lobby } from '../model/Lobby.js';
 
 let page = 1;
 let categoryList = [];
@@ -28,21 +27,7 @@ export async function categories_page() {
 
     showSpinner();
 
-    categoryList = await FirebaseController.getFirstCategoryPage();
-    page = 1;
-    showPrev = false;
-    showNext = await FirebaseController.getShowNext();
-
-    await buildHTML();
-}
-
-export async function lobbies_page() {
-
-    if (!Auth.currentUser) return;
-
-    showSpinner();
-
-    lobbyList = await FirebaseController.getFirstLobbyPage();
+    categoryList = await FirebaseController.getFirstPage(Constant.collectionNames.CATEGORIES);
     page = 1;
     showPrev = false;
     showNext = await FirebaseController.getShowNext();
@@ -89,7 +74,7 @@ async function buildHTML() {
         <ul class="pagination text-center align-items-center">
     `;
 
-    if (showPrev.data === true) {
+    if (showPrev === true) {
         html += `<li class="page-item"><button class="btn btn-outline-light" id="prev" style="width: 100px;">Previous</button></li>`;
     }
     else {
@@ -97,7 +82,7 @@ async function buildHTML() {
     }
     html += `<li class="page-item text-center text-light">${page}</li>`;
 
-    if (showNext.data === true) {
+    if (showNext === true) {
         html += `<li class="page-item"><button class="btn btn-outline-light" id="next" style="width: 100px;">Next</button></li>`;
     }
     else {
@@ -113,31 +98,35 @@ async function buildHTML() {
 
     const addButton = document.getElementById('add-button');
     addButton.addEventListener('click', async () => {
-        /*const id = Auth.currentUser.uid;
-        const name = "Test Lobby";
-        const host = "Host Name";
-        const timestamp = Date.now();
-        const open = true;
-        const players = [Auth.currentUser.uid];
-        const category = "Test";
-        const questions = [];
-        const data = {id, name, host, timestamp, open, players, category, questions};
-        const lobby = new Lobby(data);
-        
-        const label = Util.disableButton(addButton);
+        const name = "Test Category " + Math.floor((Math.random() * 1000));
+        let fields = [];
+        let fieldNumber = Math.floor((Math.random() * 5)) + 1;
+        for (let i = 0; i < fieldNumber; i++) {
+            fields[i] = "Field " + (i + 1);
+        }
+        let questions = [];
+        let questionNumber = Math.floor((Math.random() * 10)) + 1;
+        for (let i = 0; i <= questionNumber; i++) {
+            questions[i] = "Question " + (i + 1);
+        }
 
+        const data = { name, fields, questions };
+        const category = new Category(data);
+
+        const label = Util.disableButton(addButton);
         try {
-            await FirebaseController.addLobby(lobby);
+            await FirebaseController.addDocument(Constant.collectionNames.CATEGORIES, category);
         } catch (e) {
             if (Constant.DEV) console.log(e);
         }
 
         Util.enableButton(addButton, label);
-        await lobbies_page();*/
+        await categories_page();
+
         // Open add modal
     });
 
-    const editForms = document.getElementById('form-edit-category');
+    const editForms = document.getElementsByClassName('form-edit-category');
     for (let i = 0; i < editForms.length; i++) {
         editForms[i].addEventListener('submit', async e => {
             e.preventDefault();
@@ -156,7 +145,7 @@ async function buildHTML() {
             const button = e.target.getElementsByTagName('button')[0];
             const label = Util.disableButton(button);
             showSpinner();
-            lobbyList = await FirebaseController.deletCategory(e.target.docId.value);
+            categoryList = await FirebaseController.deleteDocument(Constant.collectionNames.CATEGORIES, e.target.docId.value);
             showPrev = await FirebaseController.getShowPrevious();
             showNext = await FirebaseController.getShowNext();
             page = await FirebaseController.getPage();
@@ -171,7 +160,7 @@ async function buildHTML() {
     prevButton.addEventListener('click', async () => {
         const label = Util.disableButton(prevButton);
         showSpinner();
-        lobbyList = await FirebaseController.getPreviousCategoryPage();
+        categoryList = await FirebaseController.getPreviousPage(Constant.collectionNames.CATEGORIES);
         showPrev = await FirebaseController.getShowPrevious();
         showNext = true;
         page = await FirebaseController.getPage();
@@ -182,7 +171,7 @@ async function buildHTML() {
     nextButton.addEventListener('click', async () => {
         const label = Util.disableButton(nextButton);
         showSpinner();
-        lobbyList = await FirebaseController.getNexCategoryPage();
+        categoryList = await FirebaseController.getNextPage(Constant.collectionNames.CATEGORIES);
         showPrev= true;
         showNext = await FirebaseController.getShowNext();
         page = await FirebaseController.getPage();
@@ -200,22 +189,28 @@ function buildCategoryRow(category) {
         fieldString += field;
     })
     return `
-        <tr id="lobby-category-${category.docId}">
+        <tr class="text-light" id="lobby-category-${category.docId}">
             <td>${category.name}</td>
             <td>${fieldString}</td>
             <td>${category.questions.length}</td>
             <td>
                 <form class="form-edit-category" method="post" style="display: inline-block;">
-                    <input type="hidden" name="uid" value="${category.docId}">
+                    <input type="hidden" name="docId" value="${category.docId}">
                     <button type="submit" class="btn btn-outline-warning">Edit</button>
                 </form>
             </td>
             <td>
                 <form class="form-delete-category" method="post" style="display: inline-block;">
-                    <input type="hidden" name="uid" value="${category.docId}">
+                    <input type="hidden" name="docId" value="${category.docId}">
                     <button type="submit" class="btn btn-outline-danger">Delete</button>
                 </form>
             </td>
         </tr>
     `;
+}
+
+function showSpinner() {
+    Element.root.innerHTML = `
+        <div class="spinner-border text-light" role="status"></div>
+    `
 }

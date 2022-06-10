@@ -49,7 +49,7 @@ async function getFirstPage(data, context) {
         if (data.collection === Constant.collectionNames.LOBBIES) orderField = 'timestamp';
         else if (data.collection === Constant.collectionNames.CATEGORIES) orderField = 'name';
         else if (data.collection === Constant.collectionNames.QUESTIONS) orderField = 'answer';
-        const snapShot = await admin.firestore().collection(Constant.collectionNames.LOBBIES)
+        const snapShot = await admin.firestore().collection(data.collection)
             .orderBy(orderField)
             .limit(10)
             .get();

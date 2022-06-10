@@ -54,7 +54,7 @@ export async function getFirstPage(collection) {
             d.docId = data.docId;
             documents.push(d);
         }
-        if (collection === Constant.collectionNames.QUESTIONS) {
+        else if (collection === Constant.collectionNames.QUESTIONS) {
             const d = new Question(data);
             d.docId = data.docId;
             documents.push(d);
