@@ -27,9 +27,9 @@ export async function lobbies_page() {
 
     showSpinner();
 
-    lobbyList = await FirebaseController.getFirstLobbyPage();
+    lobbyList = await FirebaseController.getFirstPage(Constant.collectionNames.LOBBIES);
     page = 1;
-    showPrev = false;
+    showPrev = await FirebaseController.getShowPrevious();
     showNext = await FirebaseController.getShowNext();
 
     await buildHTML();
@@ -75,7 +75,7 @@ async function buildHTML() {
         <ul class="pagination text-center align-items-center">
     `;
 
-    if (showPrev.data === true) {
+    if (showPrev === true) {
         html += `<li class="page-item"><button class="btn btn-outline-light" id="prev" style="width: 100px;">Previous</button></li>`;
     }
     else {
@@ -83,7 +83,7 @@ async function buildHTML() {
     }
     html += `<li class="page-item text-center text-light">${page}</li>`;
 
-    if (showNext.data === true) {
+    if (showNext === true) {
         html += `<li class="page-item"><button class="btn btn-outline-light" id="next" style="width: 100px;">Next</button></li>`;
     }
     else {
@@ -113,7 +113,7 @@ async function buildHTML() {
         const label = Util.disableButton(addButton);
 
         try {
-            await FirebaseController.addLobby(lobby);
+            await FirebaseController.addDocument(Constant.collectionNames.LOBBIES, lobby);
         } catch (e) {
             if (Constant.DEV) console.log(e);
         }
@@ -130,7 +130,7 @@ async function buildHTML() {
             const button = e.target.getElementsByTagName('button')[0];
             const label = Util.disableButton(button);
             showSpinner();
-            lobbyList = await FirebaseController.deleteLobby(e.target.docId.value);
+            lobbyList = await FirebaseController.deleteDocument(Constant.collectionNames.LOBBIES, e.target.docId.value);
             showPrev = await FirebaseController.getShowPrevious();
             showNext = await FirebaseController.getShowNext();
             page = await FirebaseController.getPage();
@@ -145,9 +145,9 @@ async function buildHTML() {
     prevButton.addEventListener('click', async () => {
         const label = Util.disableButton(prevButton);
         showSpinner();
-        lobbyList = await FirebaseController.getPreviousLobbyPage();
+        lobbyList = await FirebaseController.getPreviousPage(Constant.collectionNames.LOBBIES);
         showPrev = await FirebaseController.getShowPrevious();
-        showNext = true;
+        showNext = await FirebaseController.getShowNext();
         page = await FirebaseController.getPage();
         Util.enableButton(prevButton, label);
         await buildHTML();
@@ -156,8 +156,8 @@ async function buildHTML() {
     nextButton.addEventListener('click', async () => {
         const label = Util.disableButton(nextButton);
         showSpinner();
-        lobbyList = await FirebaseController.getNextLobbyPage();
-        showPrev= true;
+        lobbyList = await FirebaseController.getNextPage(Constant.collectionNames.LOBBIES);
+        showPrev = await FirebaseController.getShowPrevious();
         showNext = await FirebaseController.getShowNext();
         page = await FirebaseController.getPage();
         Util.enableButton(nextButton, label);

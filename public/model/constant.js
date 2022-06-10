@@ -9,4 +9,5 @@ export const collectionNames = {
     LOBBIES: 'lobbies',
     CATEGORIES: 'categories',
     QUESTIONS: 'questions',
+    FIELDS: 'fields',
 }
