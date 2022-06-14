@@ -98,7 +98,7 @@ async function buildHTML() {
 
     const addButton = document.getElementById('add-button');
     addButton.addEventListener('click', async () => {
-        const name = "Test Category " + Math.floor((Math.random() * 1000));
+        /*const name = "Test Category " + Math.floor((Math.random() * 1000));
         let fields = [];
         let fieldNumber = Math.floor((Math.random() * 5)) + 1;
         for (let i = 0; i < fieldNumber; i++) {
@@ -121,9 +121,50 @@ async function buildHTML() {
         }
 
         Util.enableButton(addButton, label);
-        await categories_page();
+        await categories_page();*/
+
+        const label = Util.disableButton(addButton);
+        Element.formAddCategory.form.reset();
+        Element.modalAddCategory.show();
 
         // Open add modal
+    });
+
+    const addFieldButton = document.getElementById('form-add-category-field-button');
+    const deleteFieldForms = document.getElementsByClassName('form-delete-field');
+    addFieldButton.addEventListener('click', e => {
+        e.preventDefault();
+        const inputField = document.getElementById('form-add-category-input-field');
+        if (!inputField.value || inputField.value.length < 3) {
+            Element.formAddCategory.errorField.innerHTML = 'Field is too short. Min 3 chars.';
+            return;
+        }
+        let fields = [];
+        for (let i = 0; i < deleteFieldForms.length; i++) {
+            fields.push(deleteFieldForms[i].field.value);
+        }
+        for (let i = 0; i < fields.length; i++) {
+            if (fields[i] === inputField.value) {
+                Element.formAddCategory.errorField.innerHTML = 'Duplicate field.';
+                return;
+            }
+        }
+        Element.formAddCategory.errorField.innerHTML = '';
+        Element.formAddCategoryFields.fieldsDiv.innerHTML = '';
+        fields.push(inputField.value);
+        inputField.value = '';
+        for (let i = 0; i < fields.length; i++) {
+            Element.formAddCategoryFields.fieldsDiv.innerHTML += `
+            <form class="form-delete-field p-1">
+                <div class="d-flex flex-row">
+                    <input class="bg-dark text-light" style="width: 80%;" id="form-add-category-fields" type="text" name="field" value="${fields[i]}" readonly>
+                    <div style="width: 10%;"></div>
+                    <button style="width: 10%;" type="submit" class="btn btn-outline-danger">-</button>
+                </div>
+            </form>
+        `;
+        }
+        addDeleteListeners();
     });
 
     const editForms = document.getElementsByClassName('form-edit-category');
@@ -213,4 +254,59 @@ function showSpinner() {
     Element.root.innerHTML = `
         <div class="spinner-border text-light" role="status"></div>
     `
+}
+
+async function addNewCategory(form) {
+    const name = form.name.value;
+    let fields = [];
+    const formFields = Element.formAddCategory.fields;
+    for (let i = 0; i < formFields.length; i++) {
+        fields[i] = formFields[i].value;
+    }
+    const questions = [];
+
+    const category = new Category({ name, fields, questions });
+
+    const errors = category.validate();
+
+    Element.formAddCategory.errorName.innerHTML = errors.name ? errors.name : '';
+    Element.formAddCategory.errorField.innerHTML = errors.field ? errors.field : '';
+
+    if (Object.keys(errors).length != 0) return;
+
+    try {
+        await FirebaseController.addDocument(Constant.collectionNames.CATEGORIES, category);
+        //Util.info('Success!', `${product.name} added!`, Element.modalAddProduct);
+    } catch (e) {
+        if (Constant.DEV) console.log(e)
+        //Util.info('Add Product failed', JSON.stringify(e), Element.modalAddProduct);
+    }
+
+}
+
+function addDeleteListeners() {
+    const deleteFieldForms = document.getElementsByClassName('form-delete-field');
+    for (let i = 0; i < deleteFieldForms.length; i++) {
+        deleteFieldForms[i].addEventListener('submit', async e => {
+            e.preventDefault();
+            let fields = [];
+            for (let i = 0; i < deleteFieldForms.length; i++) {
+                if (deleteFieldForms[i].field.value !== e.target.field.value) fields.push(deleteFieldForms[i].field.value);
+            }
+            Element.formAddCategory.errorField.innerHTML = '';
+            Element.formAddCategoryFields.fieldsDiv.innerHTML = '';
+            fields.forEach(field => {
+                Element.formAddCategoryFields.fieldsDiv.innerHTML += `
+                    <form class="form-delete-field p-1">
+                        <div class="d-flex flex-row">
+                            <input class="bg-dark text-light" style="width: 80%;" id="form-add-category-fields" type="text" name="field" value="${fields[i]}" readonly>
+                            <div style="width: 10%;"></div>
+                            <button style="width: 10%;" type="submit" class="btn btn-outline-danger">-</button>
+                        </div>
+                    </form>
+                `;
+            });
+            addDeleteListeners();
+        });
+    }
 }
