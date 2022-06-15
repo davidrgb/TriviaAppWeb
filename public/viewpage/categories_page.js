@@ -19,8 +19,8 @@ export function addEventListeners() {
         await categories_page();
         Util.enableButton(Element.menuCategories, label);
     });
-    const addCategoryFieldButtonListener = e => {
-        e.preventDefault();
+
+    Element.addCategoryFieldButton.addEventListener('click', () => {
         if (!Element.addCategoryFieldInput.value || Element.addCategoryFieldInput.value.length < 3) {
             Element.addCategoryErrorField.innerHTML = 'Field is too short. Min 3 chars.';
             return;
@@ -41,24 +41,21 @@ export function addEventListeners() {
         Element.addCategoryFieldInput.value = '';
         for (let i = 0; i < fields.length; i++) {
             Element.addCategoryFieldsDiv.innerHTML += `
-            <form class="add-category-field p-1">
-                <div class="d-flex flex-row">
-                    <input class="bg-dark text-light" style="width: 80%;" type="text" name="field" value="${fields[i]}" disabled>
-                    <div style="width: 10%;"></div>
-                    <button style="width: 10%;" type="button" class="btn btn-outline-danger">-</button>
-                </div>
-            </form>
-        `;
+                <form class="add-category-field p-1">
+                    <div class="d-flex flex-row">
+                        <input class="bg-dark text-light" style="width: 80%;" type="text" name="field" value="${fields[i]}" disabled>
+                        <div style="width: 10%;"></div>
+                        <button style="width: 10%;" type="submit" class="btn btn-outline-danger">-</button>
+                    </div>
+                </form>
+            `;
         }
         addFieldDeleteListeners();
-    }
-    Element.addCategoryFieldButton.addEventListener('click', addCategoryFieldButtonListener);
+    });
 
-    const addCategoryButtonListener = async () => {
-        console.log('button');
+    Element.addCategoryButton.addEventListener('click', async () => {
         await addNewCategory();
-    }
-    Element.addCategoryButton.addEventListener('click', addCategoryButtonListener);
+    });
 }
 
 export async function categories_page() {
@@ -138,42 +135,39 @@ async function buildHTML() {
     Element.root.innerHTML = html;
 
     const addButton = document.getElementById('add-button');
-    const addButtonListener = async () => {
+    addButton.addEventListener('click', () => {
         resetModalAddCategory();
         Element.modalAddCategory.show();
-    }
-    addButton.addEventListener('click', addButtonListener);
+    });
 
     const editForms = document.getElementsByClassName('form-edit-category');
-    const editFormsListener = async () => {
-        e.preventDefault();
-    }
     for (let i = 0; i < editForms.length; i++) {
-        editForms[i].addEventListener('click', editFormsListener);
+        editForms[i].addEventListener('click', async () => {
+
+        });
     }
 
     const deleteForms = document.getElementsByClassName('form-delete-category');
-    const deleteFormsListener = async e => {
-        e.preventDefault();
-        if (!window.confirm("Press OK to confirm deletion.")) return;
-        const button = e.target.getElementsByTagName('button')[0];
-        const label = Util.disableButton(button);
-        showSpinner();
-        categoryList = await FirebaseController.deleteDocument(Constant.collectionNames.CATEGORIES, e.target.docId.value);
-        showPrev = await FirebaseController.getShowPrevious();
-        showNext = await FirebaseController.getShowNext();
-        page = await FirebaseController.getPage();
-        Util.enableButton(button, label);
-        await buildHTML();
-    }
     for (let i = 0; i < deleteForms.length; i++) {
-        deleteForms[i].addEventListener('submit', deleteFormsListener);
+        deleteForms[i].addEventListener('submit', async e => {
+            e.preventDefault();
+            if (!window.confirm("Press OK to confirm deletion.")) return;
+            const button = e.target.getElementsByTagName('button')[0];
+            const label = Util.disableButton(button);
+            showSpinner();
+            categoryList = await FirebaseController.deleteDocument(Constant.collectionNames.CATEGORIES, e.target.docId.value);
+            showPrev = await FirebaseController.getShowPrevious();
+            showNext = await FirebaseController.getShowNext();
+            page = await FirebaseController.getPage();
+            Util.enableButton(button, label);
+            await buildHTML();
+        });
     }
 
     const prevButton = document.getElementById('prev');
     const nextButton = document.getElementById('next');
 
-    const prevButtonListener = async () => {
+    prevButton.addEventListener('click', async () => {
         const label = Util.disableButton(prevButton);
         showSpinner();
         categoryList = await FirebaseController.getPreviousPage(Constant.collectionNames.CATEGORIES);
@@ -182,10 +176,9 @@ async function buildHTML() {
         page = await FirebaseController.getPage();
         Util.enableButton(prevButton, label);
         await buildHTML();
-    }
-    prevButton.addEventListener('click', prevButtonListener);
+    });
 
-    const nextButtonListener = async () => {
+    nextButton.addEventListener('click', async () => {
         const label = Util.disableButton(nextButton);
         showSpinner();
         categoryList = await FirebaseController.getNextPage(Constant.collectionNames.CATEGORIES);
@@ -194,8 +187,7 @@ async function buildHTML() {
         page = await FirebaseController.getPage();
         Util.enableButton(nextButton, label);
         await buildHTML();
-    }
-    nextButton.addEventListener('click', nextButtonListener);
+    });
 
     Element.menu.style.display = "block";
 }
@@ -284,27 +276,27 @@ function resetModalAddCategory() {
 }
 
 function addFieldDeleteListeners() {
-    const fieldDeleteListener = async () => {
-        let fields = [];
-        for (let i = 0; i < Element.addCategoryFields.length; i++) {
-            if (Element.addCategoryFields[i].value !== e.target.field.value) fields.push(Element.addCategoryFields[i].field.value);
-        }
-        Element.addCategoryErrorField.innerHTML = '';
-        Element.addCategoryFieldsDiv.innerHTML = '';
-        for (let i = 0; i < fields.length; i++) {
-            Element.addCategoryFieldsDiv.innerHTML += `
-                <form class="add-category-field p-1">
-                    <div class="d-flex flex-row">
-                        <input class="bg-dark text-light" style="width: 80%;" type="text" name="field" value="${fields[i]}" disabled>
-                        <div style="width: 10%;"></div>
-                        <button style="width: 10%;" type="submit" class="btn btn-outline-danger">-</button>
-                    </div>
-                </form>
-            `;
-        }
-        //addFieldDeleteListeners();
-    }
     for (let i = 0; i < Element.addCategoryFields.length; i++) {
-        Element.addCategoryFields[i].addEventListener('click', fieldDeleteListener);
+        Element.addCategoryFields[i].addEventListener('submit', async e => {
+            e.preventDefault();
+            let fields = [];
+            for (let i = 0; i < Element.addCategoryFields.length; i++) {
+                if (Element.addCategoryFields[i].field.value !== e.target.field.value) fields.push(Element.addCategoryFields[i].field.value);
+            }
+            Element.addCategoryFieldsDiv.innerHTML = '';
+            Element.addCategoryErrorField.innerHTML = '';
+            for (let i = 0; i < fields.length; i++) {
+                Element.addCategoryFieldsDiv.innerHTML += `
+                    <form class="add-category-field p-1">
+                        <div class="d-flex flex-row">
+                            <input class="bg-dark text-light" style="width: 80%;" type="text" name="field" value="${fields[i]}" disabled>
+                            <div style="width: 10%;"></div>
+                            <button style="width: 10%;" type="submit" class="btn btn-outline-danger">-</button>
+                        </div>
+                    </form>
+                `;
+            }
+            addFieldDeleteListeners();
+        });
     }
 }
