@@ -183,6 +183,8 @@ async function buildHTML() {
     for (let i = 0; i < editForms.length; i++) {
         editForms[i].addEventListener('submit', async e => {
             e.preventDefault();
+            const button = e.target.getElementsByTagName('button')[0];
+            const label = Util.disableButton(button);
             const category = await FirebaseController.getDocument(Constant.collectionNames.CATEGORIES, e.target.docId.value);
             Element.editCategoryName.value = category.name;
             Element.editCategoryErrorName.innerHTML = '';
@@ -203,6 +205,7 @@ async function buildHTML() {
             editFieldDeleteListeners();
             docId = e.target.docId.value;
             Element.modalEditCategory.show();
+            Util.enableButton(button, label);
         });
     }
 
@@ -214,6 +217,7 @@ async function buildHTML() {
             const button = e.target.getElementsByTagName('button')[0];
             const label = Util.disableButton(button);
             showSpinner();
+            Util.display('Delete successful', 'Category has been deleted.');
             categoryList = await FirebaseController.deleteDocument(Constant.collectionNames.CATEGORIES, e.target.docId.value);
             showPrev = await FirebaseController.getShowPrevious();
             showNext = await FirebaseController.getShowNext();
@@ -251,6 +255,12 @@ async function buildHTML() {
     Element.menu.style.display = "block";
 }
 
+function showSpinner() {
+    Element.root.innerHTML = `
+        <div class="spinner-border text-light" role="status"></div>
+    `
+}
+
 function buildCategoryRow(category) {
     let fieldString = '';
     category.fields.forEach(field => {
@@ -276,12 +286,6 @@ function buildCategoryRow(category) {
             </td>
         </tr>
     `;
-}
-
-function showSpinner() {
-    Element.root.innerHTML = `
-        <div class="spinner-border text-light" role="status"></div>
-    `
 }
 
 async function addNewCategory() {
@@ -310,20 +314,54 @@ async function addNewCategory() {
         Util.enableButton(Element.addCategoryButton, label);
         Element.modalAddCategory.hide();
         resetModalAddCategory();
+        Util.display('Add successful', `${category.name} has been added.`);
         showSpinner();
         categoryList = await FirebaseController.getFirstPage(Constant.collectionNames.CATEGORIES);
         showPrev = false;
         showNext = await FirebaseController.getShowNext();
         page = await FirebaseController.getPage();
         await buildHTML();
-        //Util.info('Success!', `${product.name} added!`, Element.modalAddProduct);
     } catch (e) {
         if (Constant.DEV) console.log(e);
         Util.enableButton(Element.addCategoryButton, label);
         Element.modalAddCategory.hide();
         resetModalAddCategory();
-        //Util.info('Add Product failed', JSON.stringify(e), Element.modalAddProduct);
+        Util.display('Edit failed', JSON.stringify(e));
     }
+}
+
+function addFieldDeleteListeners() {
+    for (let i = 0; i < Element.addCategoryFields.length; i++) {
+        Element.addCategoryFields[i].addEventListener('submit', async e => {
+            e.preventDefault();
+            let fields = [];
+            for (let i = 0; i < Element.addCategoryFields.length; i++) {
+                if (Element.addCategoryFields[i].field.value !== e.target.field.value) fields.push(Element.addCategoryFields[i].field.value);
+            }
+            Element.addCategoryFieldsDiv.innerHTML = '';
+            Element.addCategoryErrorField.innerHTML = '';
+            for (let i = 0; i < fields.length; i++) {
+                Element.addCategoryFieldsDiv.innerHTML += `
+                    <form class="add-category-field p-1">
+                        <div class="d-flex flex-row">
+                            <input class="bg-dark text-light" style="width: 80%;" type="text" name="field" value="${fields[i]}" disabled>
+                            <div style="width: 10%;"></div>
+                            <button style="width: 10%;" type="submit" class="btn btn-outline-danger">-</button>
+                        </div>
+                    </form>
+                `;
+            }
+            addFieldDeleteListeners();
+        });
+    }
+}
+
+function resetModalAddCategory() {
+    Element.addCategoryName.value = '';
+    Element.addCategoryErrorName.innerHTML = '';
+    Element.addCategoryFieldsDiv.innerHTML = '';
+    Element.addCategoryFieldInput.value = '';
+    Element.addCategoryErrorField.innerHTML = '';
 }
 
 async function editCategory() {
@@ -352,53 +390,19 @@ async function editCategory() {
         docId = '';
         Util.enableButton(Element.editCategoryButton, label);
         Element.modalEditCategory.hide();
+        Util.display('Edit successful', `${category.name} has been edited.`);
         showSpinner();
         categoryList = await FirebaseController.getFirstPage(Constant.collectionNames.CATEGORIES);
         showPrev = false;
         showNext = await FirebaseController.getShowNext();
         page = await FirebaseController.getPage();
         await buildHTML();
-        //Util.info('Success!', `${product.name} added!`, Element.modalAddProduct);
     } catch (e) {
         if (Constant.DEV) console.log(e);
         docId = '';
         Util.enableButton(Element.editCategoryButton, label);
         Element.modalEditCategory.hide();
-        //Util.info('Add Product failed', JSON.stringify(e), Element.modalAddProduct);
-    }
-}
-
-function resetModalAddCategory() {
-    Element.addCategoryName.value = '';
-    Element.addCategoryErrorName.innerHTML = '';
-    Element.addCategoryFieldsDiv.innerHTML = '';
-    Element.addCategoryFieldInput.value = '';
-    Element.addCategoryErrorField.innerHTML = '';
-}
-
-function addFieldDeleteListeners() {
-    for (let i = 0; i < Element.addCategoryFields.length; i++) {
-        Element.addCategoryFields[i].addEventListener('submit', async e => {
-            e.preventDefault();
-            let fields = [];
-            for (let i = 0; i < Element.addCategoryFields.length; i++) {
-                if (Element.addCategoryFields[i].field.value !== e.target.field.value) fields.push(Element.addCategoryFields[i].field.value);
-            }
-            Element.addCategoryFieldsDiv.innerHTML = '';
-            Element.addCategoryErrorField.innerHTML = '';
-            for (let i = 0; i < fields.length; i++) {
-                Element.addCategoryFieldsDiv.innerHTML += `
-                    <form class="add-category-field p-1">
-                        <div class="d-flex flex-row">
-                            <input class="bg-dark text-light" style="width: 80%;" type="text" name="field" value="${fields[i]}" disabled>
-                            <div style="width: 10%;"></div>
-                            <button style="width: 10%;" type="submit" class="btn btn-outline-danger">-</button>
-                        </div>
-                    </form>
-                `;
-            }
-            addFieldDeleteListeners();
-        });
+        Util.display('Edit failed', JSON.stringify(e));
     }
 }
 

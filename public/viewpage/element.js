@@ -7,6 +7,10 @@ export const menuQuestions = document.getElementById('menu-questions');
 export const menuError = document.getElementById('menu-error');
 export const menuSignOut = document.getElementById('menu-signout');
 
+export const modalDisplay = new bootstrap.Modal(document.getElementById('modal-display'), {backdrop: 'static'});
+export const modalDisplayTitle = document.getElementById('modal-display-title');
+export const modalDisplayBody = document.getElementById('modal-display-body');
+
 export const modalAddCategory = new bootstrap.Modal(document.getElementById('modal-add-category'), {backdrop: 'static'});
 export const modalEditCategory = new bootstrap.Modal(document.getElementById('modal-edit-category'), {backdrop: 'static'});
 

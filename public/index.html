@@ -72,6 +72,19 @@
     </div>
   </nav>
 
+  <div class="modal fade" id="modal-display" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="modal-display-title" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark border-light text-light">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modal-display-title"></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div id="modal-display-body" class="modal-body"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="modal fade" id="modal-add-category" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
     aria-labelledby="modal-add-category-label" aria-hidden="true">
     <div class="modal-dialog">
@@ -88,9 +101,11 @@
             </div>
             <div id="add-category-fields-div"></div>
             <div class="d-flex flex-row p-1">
-              <input class="bg-dark text-light" style="width: 80%;" id="add-category-field-input" type="text" name="field" placeholder="Field Name">
+              <input class="bg-dark text-light" style="width: 80%;" id="add-category-field-input" type="text"
+                name="field" placeholder="Field Name">
               <div style="width: 10%;"></div>
-              <button style="width: 10%;" id="add-category-field-button" type="button" class="btn btn-outline-light">+</button>
+              <button style="width: 10%;" id="add-category-field-button" type="button"
+                class="btn btn-outline-light">+</button>
             </div>
             <div class="px-1">
               <p id="add-category-error-field"></p>
@@ -120,9 +135,11 @@
             </div>
             <div id="edit-category-fields-div"></div>
             <div class="d-flex flex-row p-1">
-              <input class="bg-dark text-light" style="width: 80%;" id="edit-category-field-input" type="text" name="field" placeholder="Field Name">
+              <input class="bg-dark text-light" style="width: 80%;" id="edit-category-field-input" type="text"
+                name="field" placeholder="Field Name">
               <div style="width: 10%;"></div>
-              <button style="width: 10%;" id="edit-category-field-button" type="button" class="btn btn-outline-light">+</button>
+              <button style="width: 10%;" id="edit-category-field-button" type="button"
+                class="btn btn-outline-light">+</button>
             </div>
             <div class="px-1">
               <p id="edit-category-error-field"></p>
