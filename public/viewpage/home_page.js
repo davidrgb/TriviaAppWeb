@@ -75,7 +75,7 @@ export async function home_page() {
                 <h3 class="text-light">Admin Portal</h3>
             </div>
             <div class="d-flex flex-row justify-content-center" style="width: 100%;">
-                <div class="d-flex flex-row justify-content-between pb-5" style="width: 75%;">
+                <div class="d-flex flex-row justify-content-between pb-5" style="width: 85%;">
                     <div class="card text-center bg-dark border border-light" style="width: 24rem;">
                         <div class="card-img-top p-3">
                             <div class="align-items-center">

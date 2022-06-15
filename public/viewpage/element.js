@@ -7,16 +7,13 @@ export const menuQuestions = document.getElementById('menu-questions');
 export const menuError = document.getElementById('menu-error');
 export const menuSignOut = document.getElementById('menu-signout');
 
-export const formAddCategory = {
-    form: document.getElementById('form-add-category'),
-    errorName: document.getElementById('form-add-category-error-name'),
-    errorField: document.getElementById('form-add-category-error-field'),
-    addFieldButton: document.getElementById('form-add-category-field-button'),
-}
-
-export const formAddCategoryFields = {
-    fieldsDiv: document.getElementById('form-add-category-fields-div'),
-    fields: document.getElementsByClassName('form-add-category-fields'),
-}
-
 export const modalAddCategory = new bootstrap.Modal(document.getElementById('modal-add-category'), {backdrop: 'static'});
+
+export const addCategoryName = document.getElementById('add-category-name');
+export const addCategoryFieldsDiv = document.getElementById('add-category-fields-div');
+export const addCategoryFields = document.getElementsByClassName('add-category-field');
+export const addCategoryFieldInput = document.getElementById('add-category-field-input');
+export const addCategoryFieldButton = document.getElementById('add-category-field-button');
+export const addCategoryErrorName = document.getElementById('add-category-error-name');
+export const addCategoryErrorField = document.getElementById('add-category-error-field');
+export const addCategoryButton = document.getElementById('add-category-button');

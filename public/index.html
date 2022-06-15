@@ -77,26 +77,28 @@
     <div class="modal-dialog">
       <div class="modal-content bg-dark border-light text-light">
         <div class="modal-header">
-          <h5 class="modal-title" id="modal-add-product-label">Add New Category</h5>
+          <h5 class="modal-title" id="modal-add-category-label">Add New Category</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form class="bg-dark text-light" id="form-add-category" method="post">
-            <div>
-              <input class="bg-dark text-light" type="text" name="name" placeholder="Name">
-              <p id="form-add-category-error-name" class="my-error"></p>
+          <div class="bg-dark text-light" id="add-category">
+            <div class="px-1">
+              <input class="bg-dark text-light" id="add-category-name" type="text" name="name" placeholder="Name">
+              <p id="add-category-error-name"></p>
             </div>
-            <div class="d-flex flex-row">
-              <input class="bg-dark text-light" style="width: 80%;" id="form-add-category-input-field" type="text" name="field" placeholder="Field Name">
+            <div id="add-category-fields-div"></div>
+            <div class="d-flex flex-row p-1">
+              <input class="bg-dark text-light" style="width: 80%;" id="add-category-field-input" type="text" name="field" placeholder="Field Name">
               <div style="width: 10%;"></div>
-              <button style="width: 10%;" id="form-add-category-field-button" type="submit" class="btn btn-outline-light">+</button>
+              <button style="width: 10%;" id="add-category-field-button" type="button" class="btn btn-outline-light">+</button>
             </div>
-            <p id="form-add-category-error-field" class="my-error"></p>
-            <div class="pt-3">
-              <button type="submit" class="btn btn-outline-light">Add</button>
+            <div class="px-1">
+              <p id="add-category-error-field"></p>
             </div>
-          </form>
-          <div id="form-add-category-fields-div"></div>
+            <div class="pt-1 px-1">
+              <button id="add-category-button" type="button" class="btn btn-outline-light">Add</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
