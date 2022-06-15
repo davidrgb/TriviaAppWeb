@@ -15,6 +15,7 @@ exports.cf_getPreviousPage = functions.https.onCall(getPreviousPage);
 exports.cf_getPreviousPageLastId = functions.https.onCall(getPreviousPageLastId);
 exports.cf_checkNextPage = functions.https.onCall(checkNextPage);
 exports.cf_checkPreviousPage = functions.https.onCall(checkPreviousPage);
+exports.cf_getCollection = functions.https.onCall(getCollection);
 exports.cf_editDocument = functions.https.onCall(editDocument);
 exports.cf_deleteDocument = functions.https.onCall(deleteDocument);
 
@@ -272,6 +273,42 @@ async function getPreviousPageLastId(data, context) {
     } catch (e) {
         if (Constant.DEV) console.log(e);
         throw new functions.https.HttpsError('internal', 'getPreviousPageLastId - ' + data.collection + ' - failed');
+    }
+}
+
+async function getCollection(data, context) {
+    if (!isAdmin(context.auth.token.email)) {
+        if (Constant.DEV) console.log('not admin', context.auth.token.email);
+        throw new functions.https.HttpsError('unauthenticated', 'Only admin may invoke this function');
+    }
+
+    try {
+        let documents = [];
+        const snapShot = await admin.firestore().collection(data.collection).get();
+        snapShot.forEach(doc => {
+            if (data.collection === Constant.collectionNames.LOBBIES) {
+                const { id, name, host, timestamp, open, players, category, questions } = doc.data();
+                const d = { id, name, host, timestamp, open, players, category, questions };
+                d.docId = doc.id;
+                documents.push(d);
+            }
+            else if (data.collection === Constant.collectionNames.CATEGORIES) {
+                const { name, fields, questions } = doc.data();
+                const d = { name, fields, questions };
+                d.docId = doc.id;
+                documents.push(d);
+            }
+            else if (data.collection === Constant.collectionNames.QUESTIONS) {
+                const { answer, info, category, fields } = doc.data();
+                const d = { answer, info, category, fields };
+                d.docId = doc.id;
+                documents.push(d);
+            }
+        });
+        return documents;
+    } catch (e) {
+        if (Constant.DEV) console.log(e);
+        throw new functions.https.HttpsError('internal', 'getCollection - ' + data.collection + ' - failed');
     }
 }
 

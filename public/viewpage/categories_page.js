@@ -236,7 +236,7 @@ async function addNewCategory() {
 
     const category = new Category({ name, fields, questions });
 
-    const errors = category.validate();
+    const errors = await category.validate();
 
     Element.addCategoryErrorName.innerHTML = errors.name ? errors.name : '';
     Element.addCategoryErrorField.innerHTML = errors.field ? errors.field : '';

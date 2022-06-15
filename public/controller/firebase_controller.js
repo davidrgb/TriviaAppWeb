@@ -150,6 +150,30 @@ export async function getPreviousPageLastId(collection) {
     });
 }
 
+const cf_getCollection = firebase.functions().httpsCallable('cf_getCollection');
+export async function getCollection(collection) {
+    const documents = [];
+    const result = await cf_getCollection({collection});
+    result.data.forEach(data => {
+        if (collection === Constant.collectionNames.LOBBIES) {
+            const d = new Lobby(data);
+            d.docId = data.docId;
+            documents.push(d);
+        }
+        else if (collection === Constant.collectionNames.CATEGORIES) {
+            const d = new Category(data);
+            d.docId = data.docId;
+            documents.push(d);
+        }
+        if (collection === Constant.collectionNames.QUESTIONS) {
+            const d = new Question(data);
+            d.docId = data.docId;
+            documents.push(d);
+        }
+    });
+    return documents;
+}
+
 const cf_editDocument = firebase.functions().httpsCallable('cf_editDocument');
 export async function editDocument(collection, docId, data) {
     await cf_editDocument({collection, docId, data});
