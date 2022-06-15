@@ -165,13 +165,35 @@ export async function getCollection(collection) {
             d.docId = data.docId;
             documents.push(d);
         }
-        if (collection === Constant.collectionNames.QUESTIONS) {
+        else if (collection === Constant.collectionNames.QUESTIONS) {
             const d = new Question(data);
             d.docId = data.docId;
             documents.push(d);
         }
     });
     return documents;
+}
+
+const cf_getDocument = firebase.functions().httpsCallable('cf_getDocument');
+export async function getDocument(collection, docId) {
+    const result = await cf_getDocument({collection, docId});
+    if (result.data) {
+        if (collection === Constant.collectionNames.LOBBIES) {
+            let document = new Lobby(result.data);
+            document.docId = result.data.docId;
+            return document;
+        }
+        else if (collection === Constant.collectionNames.CATEGORIES) {
+            let document = new Category(result.data);
+            document.docId = result.data.docId;
+            return document;
+        }
+        else if (collection === Constant.collectionNames.QUESTIONS) {
+            let document = new Question(result.data);
+            document.docId = result.data.docId;
+            return document;
+        }
+    };
 }
 
 const cf_editDocument = firebase.functions().httpsCallable('cf_editDocument');

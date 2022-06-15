@@ -8,6 +8,7 @@ export const menuError = document.getElementById('menu-error');
 export const menuSignOut = document.getElementById('menu-signout');
 
 export const modalAddCategory = new bootstrap.Modal(document.getElementById('modal-add-category'), {backdrop: 'static'});
+export const modalEditCategory = new bootstrap.Modal(document.getElementById('modal-edit-category'), {backdrop: 'static'});
 
 export const addCategoryName = document.getElementById('add-category-name');
 export const addCategoryFieldsDiv = document.getElementById('add-category-fields-div');
@@ -17,3 +18,12 @@ export const addCategoryFieldButton = document.getElementById('add-category-fiel
 export const addCategoryErrorName = document.getElementById('add-category-error-name');
 export const addCategoryErrorField = document.getElementById('add-category-error-field');
 export const addCategoryButton = document.getElementById('add-category-button');
+
+export const editCategoryName = document.getElementById('edit-category-name');
+export const editCategoryFieldsDiv = document.getElementById('edit-category-fields-div');
+export const editCategoryFields = document.getElementsByClassName('edit-category-field');
+export const editCategoryFieldInput = document.getElementById('edit-category-field-input');
+export const editCategoryFieldButton = document.getElementById('edit-category-field-button');
+export const editCategoryErrorName = document.getElementById('edit-category-error-name');
+export const editCategoryErrorField = document.getElementById('edit-category-error-field');
+export const editCategoryButton = document.getElementById('edit-category-button');

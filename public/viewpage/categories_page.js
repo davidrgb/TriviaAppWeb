@@ -12,6 +12,8 @@ let categoryList = [];
 let showPrev;
 let showNext;
 
+let docId;
+
 export function addEventListeners() {
     Element.menuCategories.addEventListener('click', async () => {
         history.pushState(null, null, Route.routePathname.CATEGORIES)
@@ -55,6 +57,43 @@ export function addEventListeners() {
 
     Element.addCategoryButton.addEventListener('click', async () => {
         await addNewCategory();
+    });
+
+    Element.editCategoryFieldButton.addEventListener('click', () => {
+        if (!Element.editCategoryFieldInput.value || Element.editCategoryFieldInput.value.length < 3) {
+            Element.editCategoryErrorField.innerHTML = 'Field is too short. Min 3 chars.';
+            return;
+        }
+        let fields = [];
+        for (let i = 0; i < Element.editCategoryFields.length; i++) {
+            fields.push(Element.editCategoryFields[i].field.value);
+        }
+        for (let i = 0; i < fields.length; i++) {
+            if (fields[i] === Element.editCategoryFieldInput.value) {
+                Element.editCategoryErrorField.innerHTML = 'Duplicate field.';
+                return;
+            }
+        }
+        Element.editCategoryErrorField.innerHTML = '';
+        Element.editCategoryFieldsDiv.innerHTML = '';
+        fields.push(Element.editCategoryFieldInput.value);
+        Element.editCategoryFieldInput.value = '';
+        for (let i = 0; i < fields.length; i++) {
+            Element.editCategoryFieldsDiv.innerHTML += `
+                <form class="edit-category-field p-1">
+                    <div class="d-flex flex-row">
+                        <input class="bg-dark text-light" style="width: 80%;" type="text" name="field" value="${fields[i]}" disabled>
+                        <div style="width: 10%;"></div>
+                        <button style="width: 10%;" type="submit" class="btn btn-outline-danger">-</button>
+                    </div>
+                </form>
+            `;
+        }
+        editFieldDeleteListeners();
+    });
+
+    Element.editCategoryButton.addEventListener('click', async () => {
+        await editCategory();
     });
 }
 
@@ -142,8 +181,28 @@ async function buildHTML() {
 
     const editForms = document.getElementsByClassName('form-edit-category');
     for (let i = 0; i < editForms.length; i++) {
-        editForms[i].addEventListener('click', async () => {
-
+        editForms[i].addEventListener('submit', async e => {
+            e.preventDefault();
+            const category = await FirebaseController.getDocument(Constant.collectionNames.CATEGORIES, e.target.docId.value);
+            Element.editCategoryName.value = category.name;
+            Element.editCategoryErrorName.innerHTML = '';
+            Element.editCategoryFieldsDiv.innerHTML = '';
+            for (let i = 0; i < category.fields.length; i++) {
+                Element.editCategoryFieldsDiv.innerHTML += `
+                    <form class="edit-category-field p-1">
+                        <div class="d-flex flex-row">
+                            <input class="bg-dark text-light" style="width: 80%;" type="text" name="field" value="${category.fields[i]}" disabled>
+                            <div style="width: 10%;"></div>
+                            <button style="width: 10%;" type="submit" class="btn btn-outline-danger">-</button>
+                        </div>
+                    </form>
+                `;
+            }
+            Element.editCategoryFieldInput.value = '';
+            Element.editCategoryErrorField.innerHTML = '';
+            editFieldDeleteListeners();
+            docId = e.target.docId.value;
+            Element.modalEditCategory.show();
         });
     }
 
@@ -267,11 +326,53 @@ async function addNewCategory() {
     }
 }
 
+async function editCategory() {
+    const label = Util.disableButton(Element.editCategoryButton);
+    const name = Element.editCategoryName.value;
+    let fields = [];
+    for (let i = 0; i < Element.editCategoryFields.length; i++) {
+        fields[i] = Element.editCategoryFields[i].field.value;
+    }
+    const questions = [];
+
+    const category = new Category({ name, fields, questions });
+
+    const errors = await category.validate(docId);
+
+    Element.editCategoryErrorName.innerHTML = errors.name ? errors.name : '';
+    Element.editCategoryErrorField.innerHTML = errors.field ? errors.field : '';
+
+    if (Object.keys(errors).length != 0) {
+        Util.enableButton(Element.editCategoryButton, label);
+        return;
+    }
+
+    try {
+        await FirebaseController.editDocument(Constant.collectionNames.CATEGORIES, docId, category);
+        docId = '';
+        Util.enableButton(Element.editCategoryButton, label);
+        Element.modalEditCategory.hide();
+        showSpinner();
+        categoryList = await FirebaseController.getFirstPage(Constant.collectionNames.CATEGORIES);
+        showPrev = false;
+        showNext = await FirebaseController.getShowNext();
+        page = await FirebaseController.getPage();
+        await buildHTML();
+        //Util.info('Success!', `${product.name} added!`, Element.modalAddProduct);
+    } catch (e) {
+        if (Constant.DEV) console.log(e);
+        docId = '';
+        Util.enableButton(Element.editCategoryButton, label);
+        Element.modalEditCategory.hide();
+        //Util.info('Add Product failed', JSON.stringify(e), Element.modalAddProduct);
+    }
+}
+
 function resetModalAddCategory() {
     Element.addCategoryName.value = '';
     Element.addCategoryErrorName.innerHTML = '';
     Element.addCategoryFieldsDiv.innerHTML = '';
-    Element.addCategoryFieldInput.innerHTML = '';
+    Element.addCategoryFieldInput.value = '';
     Element.addCategoryErrorField.innerHTML = '';
 }
 
@@ -297,6 +398,32 @@ function addFieldDeleteListeners() {
                 `;
             }
             addFieldDeleteListeners();
+        });
+    }
+}
+
+function editFieldDeleteListeners() {
+    for (let i = 0; i < Element.editCategoryFields.length; i++) {
+        Element.editCategoryFields[i].addEventListener('submit', async e => {
+            e.preventDefault();
+            let fields = [];
+            for (let i = 0; i < Element.editCategoryFields.length; i++) {
+                if (Element.editCategoryFields[i].field.value !== e.target.field.value) fields.push(Element.editCategoryFields[i].field.value);
+            }
+            Element.editCategoryFieldsDiv.innerHTML = '';
+            Element.editCategoryErrorField.innerHTML = '';
+            for (let i = 0; i < fields.length; i++) {
+                Element.editCategoryFieldsDiv.innerHTML += `
+                    <form class="edit-category-field p-1">
+                        <div class="d-flex flex-row">
+                            <input class="bg-dark text-light" style="width: 80%;" type="text" name="field" value="${fields[i]}" disabled>
+                            <div style="width: 10%;"></div>
+                            <button style="width: 10%;" type="submit" class="btn btn-outline-danger">-</button>
+                        </div>
+                    </form>
+                `;
+            }
+            editFieldDeleteListeners();
         });
     }
 }

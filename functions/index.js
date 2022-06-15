@@ -16,6 +16,7 @@ exports.cf_getPreviousPageLastId = functions.https.onCall(getPreviousPageLastId)
 exports.cf_checkNextPage = functions.https.onCall(checkNextPage);
 exports.cf_checkPreviousPage = functions.https.onCall(checkPreviousPage);
 exports.cf_getCollection = functions.https.onCall(getCollection);
+exports.cf_getDocument = functions.https.onCall(getDocument);
 exports.cf_editDocument = functions.https.onCall(editDocument);
 exports.cf_deleteDocument = functions.https.onCall(deleteDocument);
 
@@ -309,6 +310,40 @@ async function getCollection(data, context) {
     } catch (e) {
         if (Constant.DEV) console.log(e);
         throw new functions.https.HttpsError('internal', 'getCollection - ' + data.collection + ' - failed');
+    }
+}
+
+async function getDocument(data, context) {
+    if (!isAdmin(context.auth.token.email)) {
+        if (Constant.DEV) console.log('not admin', context.auth.token.email);
+        throw new functions.https.HttpsError('unauthenticated', 'Only admin may invoke this function');
+    }
+
+    try {
+        const doc = await admin.firestore().collection(data.collection).doc(data.docId).get();
+        if (doc.exists) {
+            if (data.collection === Constant.collectionNames.LOBBIES) {
+                const { id, name, host, timestamp, open, players, category, questions } = doc.data();
+                const d = { id, name, host, timestamp, open, players, category, questions };
+                d.docId = doc.id;
+                return d;
+            }
+            else if (data.collection === Constant.collectionNames.CATEGORIES) {
+                const { name, fields, questions } = doc.data();
+                const d = { name, fields, questions };
+                d.docId = doc.id;
+                return d;
+            }
+            else if (data.collection === Constant.collectionNames.QUESTIONS) {
+                const { answer, info, category, fields } = doc.data();
+                const d = { answer, info, category, fields };
+                d.docId = doc.id;
+                return d;
+            }
+        };
+    } catch (e) {
+        if (Constant.DEV) console.log(e);
+        throw new functions.https.HttpsError('internal', 'getDocument - ' + data.collection + ' - failed');
     }
 }
 
