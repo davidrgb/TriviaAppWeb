@@ -24,7 +24,7 @@ let showNext;
 
 const cf_addDocument = firebase.functions().httpsCallable('cf_addDocument');
 export async function addDocument(collection, document) {
-    await cf_addDocument({collection, document});
+    return await cf_addDocument({collection, document});
 }
 
 const cf_checkNextPage = firebase.functions().httpsCallable('cf_checkNextPage');
@@ -194,6 +194,28 @@ export async function getDocument(collection, docId) {
             return document;
         }
     };
+}
+
+const cf_getDocumentByField = firebase.functions().httpsCallable('cf_getDocumentByField');
+export async function getDocumentByField(collection, field) {
+    const result = await cf_getDocumentByField({collection, field});
+    if (result.data) {
+        if (collection === Constant.collectionNames.LOBBIES) {
+            let document = new Lobby(result.data);
+            document.docId = result.data.docId;
+            return document;
+        }
+        else if (collection === Constant.collectionNames.CATEGORIES) {
+            let document = new Category(result.data);
+            document.docId = result.data.docId;
+            return document;
+        }
+        else if (collection === Constant.collectionNames.QUESTIONS) {
+            let document = new Question(result.data);
+            document.docId = result.data.docId;
+            return document;
+        }
+    }
 }
 
 const cf_editDocument = firebase.functions().httpsCallable('cf_editDocument');

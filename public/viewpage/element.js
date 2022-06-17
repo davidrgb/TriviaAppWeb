@@ -14,6 +14,8 @@ export const modalDisplayBody = document.getElementById('modal-display-body');
 export const modalAddCategory = new bootstrap.Modal(document.getElementById('modal-add-category'), {backdrop: 'static'});
 export const modalEditCategory = new bootstrap.Modal(document.getElementById('modal-edit-category'), {backdrop: 'static'});
 
+export const modalAddQuestion = new bootstrap.Modal(document.getElementById('modal-add-question'), {backdrop: 'static'});
+
 export const addCategoryName = document.getElementById('add-category-name');
 export const addCategoryFieldsDiv = document.getElementById('add-category-fields-div');
 export const addCategoryFields = document.getElementsByClassName('add-category-field');
@@ -31,3 +33,20 @@ export const editCategoryFieldButton = document.getElementById('edit-category-fi
 export const editCategoryErrorName = document.getElementById('edit-category-error-name');
 export const editCategoryErrorField = document.getElementById('edit-category-error-field');
 export const editCategoryButton = document.getElementById('edit-category-button');
+
+export const addQuestionAnswer = document.getElementById('add-question-answer');
+export const addQuestionInfo = document.getElementById('add-question-info');
+export const addQuestionCategory = document.getElementById('add-question-category');
+export const addQuestionSelectCategoryButton = document.getElementById('add-question-category-select');
+export const addQuestionRemoveCategoryButton = document.getElementById('add-question-category-remove');
+export const addQuestionFieldsDiv = document.getElementById('add-question-fields-div');
+export const addQuestionFieldNames = document.getElementsByClassName('add-question-field-name');
+export const addQuestionFields = document.getElementsByClassName('add-question-field');
+export const addQuestionFieldData = document.getElementsByClassName('add-question-field-data');
+export const addQuestionFieldInputs = document.getElementsByClassName('add-question-field-input');
+export const addQuestionFieldDataButtons = document.getElementsByClassName('add-question-field-data-button');
+export const addQuestionErrorAnswer = document.getElementById('add-question-error-answer');
+export const addQuestionErrorInfo = document.getElementById('add-question-error-info');
+export const addQuestionErrorCategory = document.getElementById('add-question-error-category');
+export const addQuestionErrorField = document.getElementById('add-question-error-field');
+export const addQuestionButton = document.getElementById('add-question-button');

@@ -326,7 +326,7 @@ async function addNewCategory() {
         Util.enableButton(Element.addCategoryButton, label);
         Element.modalAddCategory.hide();
         resetModalAddCategory();
-        Util.display('Edit failed', JSON.stringify(e));
+        Util.display('Add failed', JSON.stringify(e));
     }
 }
 

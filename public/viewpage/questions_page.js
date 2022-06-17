@@ -5,12 +5,15 @@ import * as Util from './util.js';
 import * as Element from './element.js';
 import * as Constant from '../model/constant.js';
 import { Question } from '../model/Question.js';
+import { Field } from '../model/Field.js';
 
 let page = 1;
 let questionList = [];
 
 let showPrev;
 let showNext;
+let category;
+let docId;
 
 export function addEventListeners() {
     Element.menuQuestions.addEventListener('click', async () => {
@@ -18,6 +21,26 @@ export function addEventListeners() {
         const label = Util.disableButton(Element.menuQuestions);
         await questions_page();
         Util.enableButton(Element.menuQuestions, label);
+    });
+
+    Element.addQuestionSelectCategoryButton.addEventListener('click', async () => {
+        const label = Util.disableButton(Element.addQuestionSelectCategoryButton);
+        category = await FirebaseController.getDocumentByField(Constant.collectionNames.CATEGORIES, Element.addQuestionCategory.value);
+        Element.addQuestionSelectCategoryButton.style.display = 'none';
+        Element.addQuestionRemoveCategoryButton.style.display = 'block';
+        buildFieldDiv();
+        Util.enableButton(Element.addQuestionSelectCategoryButton, label);
+    });
+
+    Element.addQuestionRemoveCategoryButton.addEventListener('click', () => {
+        category = null;
+        Element.addQuestionRemoveCategoryButton.style.display = 'none';
+        Element.addQuestionSelectCategoryButton.style.display = 'block';
+        Element.addQuestionFieldsDiv.innerHTML = '';
+    });
+
+    Element.addQuestionButton.addEventListener('click', async () => {
+        await addNewQuestion();
     })
 }
 
@@ -49,7 +72,6 @@ async function buildHTML() {
                     <th scope="col">Answer</th>
                     <th scope="col">Info</th>
                     <th scope="col">Category</th>
-                    <th scope="col">Fields</th>
                     <th scope="col"></th>
                     <th scope="col"></th>
                 </tr>
@@ -89,7 +111,7 @@ async function buildHTML() {
     else {
         html += `<li class="page-item"><button class="btn btn-outline-light" id="next" style="width: 100px;" disabled>Next</button></li>`;
     }
-    
+
     html += `
             </ul>
         </nav>
@@ -99,29 +121,8 @@ async function buildHTML() {
 
     const addButton = document.getElementById('add-button');
     addButton.addEventListener('click', async () => {
-        const answer = "Test Question " + Math.floor((Math.random() * 1000));
-        const info = "Test Info " + Math.floor((Math.random() * 1000));
-        const category = "Test Category " + Math.floor((Math.random() * 1000));
-        let fields = [];
-        let fieldNumber = Math.floor((Math.random() * 5)) + 1;
-        for (let i = 0; i < fieldNumber; i++) {
-            fields[i] = "Field Name " + (i + 1);
-        }
-
-        const data = { answer, info, category, fields };
-        const question = new Question(data);
-
-        const label = Util.disableButton(addButton);
-        try {
-            await FirebaseController.addDocument(Constant.collectionNames.QUESTIONS, question);
-        } catch (e) {
-            if (Constant.DEV) console.log(e);
-        }
-
-        Util.enableButton(addButton, label);
-        await questions_page();
-
-        // Open add modal
+        resetModalAddQuestion();
+        Element.modalAddQuestion.show();
     });
 
     const editForms = document.getElementsByClassName('form-edit-question');
@@ -170,7 +171,7 @@ async function buildHTML() {
         const label = Util.disableButton(nextButton);
         showSpinner();
         questionList = await FirebaseController.getNextPage(Constant.collectionNames.QUESTIONS);
-        showPrev= true;
+        showPrev = true;
         showNext = await FirebaseController.getShowNext();
         page = await FirebaseController.getPage();
         Util.enableButton(nextButton, label);
@@ -180,18 +181,18 @@ async function buildHTML() {
     Element.menu.style.display = "block";
 }
 
+function showSpinner() {
+    Element.root.innerHTML = `
+        <div class="spinner-border text-light" role="status"></div>
+    `
+}
+
 function buildQuestionRow(question) {
-    let fieldString = '';
-    question.fields.forEach(field => {
-        if (fieldString !== '') fieldString += ', ';
-        fieldString += field;
-    })
     return `
         <tr class="text-light" id="lobby-category-${question.docId}">
             <td>${question.answer}</td>
             <td>${question.info}</td>
             <td>${question.category}</td>
-            <td>${fieldString}</td>
             <td>
                 <form class="form-edit-question" method="post" style="display: inline-block;">
                     <input type="hidden" name="docId" value="${question.docId}">
@@ -208,8 +209,164 @@ function buildQuestionRow(question) {
     `;
 }
 
-function showSpinner() {
-    Element.root.innerHTML = `
-        <div class="spinner-border text-light" role="status"></div>
-    `
+async function addNewQuestion() {
+    const label = Util.disableButton(Element.addQuestionButton);
+    const answer = Element.addQuestionAnswer.value;
+    const info = Element.addQuestionInfo.value;
+    const cat = Element.addQuestionCategory.value;
+    let fields = [];
+    for (let i = 0; i < category.fields.length; i++) {
+        let data = [];
+        const fieldData = document.getElementsByClassName(`add-question-field-data-${category.fields[i]}`);
+        for (let j = 0; j < fieldData.length; j++) {
+            data[j] = fieldData[j].data.value;
+        }
+        fields[i] = new Field({ name: category.fields[i], question: answer, data: data });
+    }
+
+    let fieldDocIds = [];
+    for (let i = 0; i < fields.length; i++) {
+        fieldDocIds[i] = await FirebaseController.addDocument(Constant.collectionNames.FIELDS, fields[i]);
+    }
+
+    const question = new Question({ answer: answer, info: info, category: cat, fields: fieldDocIds });
+
+    const errors = await question.validate();
+
+    Element.addQuestionErrorAnswer.innerHTML = errors.answer ? errors.answer : '';
+    Element.addQuestionErrorInfo.innerHTML = errors.info ? errors.info : '';
+    Element.addQuestionErrorCategory.innerHTML = errors.category ? errors.category : '';
+    Element.addQuestionErrorField.innerHTML = errors.field ? errors.field : '';
+
+    if (Object.keys(errors).length != 0) {
+        Util.enableButton(Element.addQuestionButton, label);
+        return;
+    }
+
+    try {
+        let questionId = await FirebaseController.addDocument(Constant.collectionNames.QUESTIONS, question);
+        category.questions.push(questionId);
+        await FirebaseController.editDocument(Constant.collectionNames.CATEGORIES, category.docId, category);
+        Util.enableButton(Element.addQuestionButton, label);
+        Element.modalAddQuestion.hide();
+        resetModalAddQuestion();
+        Util.display('Add successful', `${question.answer} has been added.`);
+        showSpinner();
+        questionList = await FirebaseController.getFirstPage(Constant.collectionNames.QUESTIONS);
+        showPrev = false;
+        showNext = await FirebaseController.getShowNext();
+        page = await FirebaseController.getPage();
+        await buildHTML();
+    } catch (e) {
+        if (Constant.DEV) console.log(e);
+        Util.enableButton(Element.addQuestionButton, label);
+        resetModalAddQuestion();
+        Util.display('Add failed', JSON.stringify(e));
+    }
+
+}
+
+function buildFieldDiv() {
+    for (let i = 0; i < category.fields.length; i++) {
+        Element.addQuestionFieldsDiv.innerHTML += `
+            <div class="add-question-field" id="add-question-field-${category.fields[i]}">
+                <h5>${category.fields[i]}</h5>
+                <div id="add-question-field-data-div-${category.fields[i]}"></div>
+                <div class="d-flex flex-row p-1">
+                    <input class="bg-dark text-light" style="width: 80%;" id="add-question-field-data-input-${category.fields[i]}" type="text"
+                        name="data" placeholder="Data Name">
+                    <div style="width: 10%;"></div>
+                    <form method="post" class="add-question-field-data-button" style="width: 10%;">
+                        <input type="hidden" name="field" value="${category.fields[i]}">
+                        <button type="submit"
+                            class="btn btn-outline-light" style="width: 100%; height: 100%">+</button>
+                    </form>
+                </div>
+            </div>
+        `;
+    }
+
+    const addFieldDataButtons = document.getElementsByClassName(`add-question-field-data-button`);
+    for (let i = 0; i < addFieldDataButtons.length; i++) {
+        addFieldDataButtons[i].addEventListener('submit', e => {
+            e.preventDefault();
+            const fieldDataInput = document.getElementById(`add-question-field-data-input-${e.target.field.value}`);
+            if (!fieldDataInput.value || fieldDataInput.value.length < 1) {
+                Element.addQuestionErrorField.innerHTML = 'Field data is too short.';
+                return;
+            }
+            let data = [];
+            const addFieldData = document.getElementsByClassName(`add-question-field-data-${e.target.field.value}`);
+            for (let j = 0; j < addFieldData.length; j++) {
+                data.push(addFieldData[j].data.value);
+            }
+            const addFieldDataInput = document.getElementById(`add-question-field-data-input-${e.target.field.value}`);
+            for (let j = 0; j < data.length; j++) {
+                if (data[j] === addFieldDataInput.value) {
+                    Element.addQuestionErrorField.innerHTML = 'Duplicate data';
+                    return;
+                }
+            }
+            const fieldDataDiv = document.getElementById(`add-question-field-data-div-${e.target.field.value}`);
+            fieldDataDiv.innerHTML = '';
+            data.push(addFieldDataInput.value);
+            addFieldDataInput.value = '';
+            Element.addCategoryErrorField.innerHTML = '';
+            for (let k = 0; k < data.length; k++) {
+                fieldDataDiv.innerHTML += `
+                        <form class="add-question-field-data-${e.target.field.value} p-1">
+                            <div class="d-flex flew-row">
+                                <input class="bg-dark text-light" style="width: 80%;" type="text" name="data" value="${data[k]}" disabled>
+                                <input type="hidden" name="field" value="${e.target.field.value}">
+                                <div style="width: 10%;"></div>
+                                <button style="width: 10%;" type="submit" class="btn btn-outline-danger">-</button>
+                            </div>
+                        </form>
+                    `;
+            }
+            addDataDeleteListeners();
+        });
+    }
+}
+
+function addDataDeleteListeners() {
+    for (let i = 0; i < category.fields.length; i++) {
+        const addFieldData = document.getElementsByClassName(`add-question-field-data-${category.fields[i]}`);
+        for (let j = 0; j < addFieldData.length; j++) {
+            addFieldData[j].addEventListener('submit', async e => {
+                e.preventDefault();
+                let data = [];
+                for (let k = 0; k < addFieldData.length; k++) {
+                    if (addFieldData[k].data.value !== e.target.data.value) data.push(addFieldData[k].data.value);
+                }
+                const fieldDataDiv = document.getElementById(`add-question-field-data-div-${e.target.field.value}`);
+                fieldDataDiv.innerHTML = '';
+                Element.addCategoryErrorField.innerHTML = '';
+                for (let k = 0; k < data.length; k++) {
+                    fieldDataDiv.innerHTML += `
+                        <form class="add-question-field-data-${e.target.field.value} p-1">
+                            <div class="d-flex flew-row">
+                                <input class="bg-dark text-light" style="width: 80%;" type="text" name="data" value="${data[k]}" disabled>
+                                <input type="hidden" name="field" value="${e.target.field.value}">
+                                <div style="width: 10%;"></div>
+                                <button style="width: 10%;" type="submit" class="btn btn-outline-danger">-</button>
+                            </div>
+                        </form>
+                    `;
+                }
+                addDataDeleteListeners();
+            });
+        }
+    }
+}
+
+function resetModalAddQuestion() {
+    Element.addQuestionAnswer.value = '';
+    Element.addQuestionErrorAnswer.innerHTML = '';
+    Element.addQuestionInfo.value = '';
+    Element.addQuestionErrorInfo.innerHTML = '';
+    Element.addQuestionCategory.value = '';
+    Element.addQuestionErrorCategory.innerHTML = '';
+    Element.addQuestionFieldsDiv.innerHTML = '';
+    Element.addQuestionErrorField.innerHTML = '';
 }

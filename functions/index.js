@@ -17,6 +17,7 @@ exports.cf_checkNextPage = functions.https.onCall(checkNextPage);
 exports.cf_checkPreviousPage = functions.https.onCall(checkPreviousPage);
 exports.cf_getCollection = functions.https.onCall(getCollection);
 exports.cf_getDocument = functions.https.onCall(getDocument);
+exports.cf_getDocumentByField = functions.https.onCall(getDocumentByField);
 exports.cf_editDocument = functions.https.onCall(editDocument);
 exports.cf_deleteDocument = functions.https.onCall(deleteDocument);
 
@@ -31,8 +32,9 @@ async function addDocument(data, context) {
     }
 
     try {
-        await admin.firestore().collection(data.collection)
+        let reference = await admin.firestore().collection(data.collection)
             .add(data.document);
+        return reference.id;
     } catch (e) {
         if (Constant.DEV) console.log(e);
         throw new functions.https.HttpsError('internal', 'addDocument - ' + data.collection + ' - failed');
@@ -344,6 +346,44 @@ async function getDocument(data, context) {
     } catch (e) {
         if (Constant.DEV) console.log(e);
         throw new functions.https.HttpsError('internal', 'getDocument - ' + data.collection + ' - failed');
+    }
+}
+
+async function getDocumentByField(data, context) {
+    if (!isAdmin(context.auth.token.email)) {
+        if (Constant.DEV) console.log('not admin', context.auth.token.email);
+        throw new functions.https.HttpsError('unauthenticated', 'Only admin may invoke this function');
+    }
+
+    try {
+        if (data.collection === Constant.collectionNames.LOBBIES) {
+            const snapShot = await admin.firestore().collection(data.collection).where("id", "==", data.field).get();
+            snapShot.forEach(doc => {
+                const { id, name, host, timestamp, open, players, category, questions } = doc.data();
+                const d = { id, name, host, timestamp, open, players, category, questions };
+                d.docId = doc.id;
+                return d;
+            });
+        }
+        else if (data.collection === Constant.collectionNames.CATEGORIES) {
+            const snapShot = await admin.firestore().collection(data.collection).where("name", "==", data.field).get();
+            const { name, fields, questions } = snapShot.docs[0].data();
+            const d = { name, fields, questions };
+            d.docId = snapShot.docs[0].id;
+            return d;
+        }
+        else if (data.collection === Constant.collectionNames.QUESTIONS) {
+            const snapShot = await admin.firestore().collection(data.collection).where("answer", "==", data.field).get();
+            snapShot.forEach(doc => {
+                const { answer, info, category, fields } = doc.data();
+                const d = { answer, info, category, fields };
+                d.docId = doc.id;
+                return d;
+            });
+        }
+    } catch (e) {
+        if (Constant.DEV) console.log(e);
+        throw new functions.https.HttpsError('internal', 'getDocumentById - ' + data.collection + ' - failed');
     }
 }
 
