@@ -53,6 +53,7 @@ export function addEventListeners() {
             `;
         }
         addFieldDeleteListeners();
+        Element.addCategoryFieldInput.focus();
     });
 
     Element.addCategoryButton.addEventListener('click', async () => {
@@ -217,8 +218,8 @@ async function buildHTML() {
             const button = e.target.getElementsByTagName('button')[0];
             const label = Util.disableButton(button);
             showSpinner();
-            Util.display('Delete successful', 'Category has been deleted.');
             categoryList = await FirebaseController.deleteDocument(Constant.collectionNames.CATEGORIES, e.target.docId.value);
+            Util.display('Delete successful', 'Category has been deleted.');
             showPrev = await FirebaseController.getShowPrevious();
             showNext = await FirebaseController.getShowNext();
             page = await FirebaseController.getPage();

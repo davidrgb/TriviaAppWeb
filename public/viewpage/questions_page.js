@@ -12,6 +12,9 @@ let questionList = [];
 
 let showPrev;
 let showNext;
+
+let categoryList = [];
+
 let category;
 let docId;
 
@@ -21,22 +24,6 @@ export function addEventListeners() {
         const label = Util.disableButton(Element.menuQuestions);
         await questions_page();
         Util.enableButton(Element.menuQuestions, label);
-    });
-
-    Element.addQuestionSelectCategoryButton.addEventListener('click', async () => {
-        const label = Util.disableButton(Element.addQuestionSelectCategoryButton);
-        category = await FirebaseController.getDocumentByField(Constant.collectionNames.CATEGORIES, Element.addQuestionCategory.value);
-        Element.addQuestionSelectCategoryButton.style.display = 'none';
-        Element.addQuestionRemoveCategoryButton.style.display = 'block';
-        buildFieldDiv();
-        Util.enableButton(Element.addQuestionSelectCategoryButton, label);
-    });
-
-    Element.addQuestionRemoveCategoryButton.addEventListener('click', () => {
-        category = null;
-        Element.addQuestionRemoveCategoryButton.style.display = 'none';
-        Element.addQuestionSelectCategoryButton.style.display = 'block';
-        Element.addQuestionFieldsDiv.innerHTML = '';
     });
 
     Element.addQuestionButton.addEventListener('click', async () => {
@@ -50,6 +37,7 @@ export async function questions_page() {
 
     showSpinner();
 
+    categoryList = await FirebaseController.getCollection(Constant.collectionNames.CATEGORIES);
     questionList = await FirebaseController.getFirstPage(Constant.collectionNames.QUESTIONS);
     page = 1;
     showPrev = false;
@@ -118,6 +106,24 @@ async function buildHTML() {
     `;
 
     Element.root.innerHTML = html;
+    
+    Element.addQuestionCategoryDropdown.innerHTML = '';
+    for (let i = 0; i < categoryList.length; i++) {
+        Element.addQuestionCategoryDropdown.innerHTML += `
+            <button class="dropdown-item add-question-category-dropdown-item" type="button">${categoryList[i].name}</button>
+        `;
+    }
+
+    const addQuestionCategoryDropdownItems = document.getElementsByClassName('add-question-category-dropdown-item');
+    for (let i = 0; i < addQuestionCategoryDropdownItems.length; i++) {
+        addQuestionCategoryDropdownItems[i].addEventListener('click', () => {
+            category = categoryList[i];
+            Element.addQuestionCategoryDropdownButton.innerHTML = category.name;
+            Element.addQuestionFieldsDiv.innerHTML = '';
+            Element.addQuestionErrorCategory.innerHTML = '';
+            buildFieldDiv();
+        });
+    }
 
     const addButton = document.getElementById('add-button');
     addButton.addEventListener('click', async () => {
@@ -145,6 +151,8 @@ async function buildHTML() {
             const label = Util.disableButton(button);
             showSpinner();
             questionList = await FirebaseController.deleteDocument(Constant.collectionNames.QUESTIONS, e.target.docId.value);
+            Util.display('Delete successful', 'Question has been deleted.');
+            categoryList = await FirebaseController.getCollection(Constant.collectionNames.CATEGORIES);
             showPrev = await FirebaseController.getShowPrevious();
             showNext = await FirebaseController.getShowNext();
             page = await FirebaseController.getPage();
@@ -210,33 +218,55 @@ function buildQuestionRow(question) {
 }
 
 async function addNewQuestion() {
-    const label = Util.disableButton(Element.addQuestionButton);
+    if (!category) {
+        Element.addQuestionErrorCategory.innerHTML = 'Question category is required.';
+        return;
+    }
+
     const answer = Element.addQuestionAnswer.value;
     const info = Element.addQuestionInfo.value;
-    const cat = Element.addQuestionCategory.value;
     let fields = [];
     for (let i = 0; i < category.fields.length; i++) {
         let data = [];
         const fieldData = document.getElementsByClassName(`add-question-field-data-${category.fields[i]}`);
+        if (fieldData.length < 1 || fieldData[0].data.value.trim() === '') {
+            Element.addQuestionErrorField.innerHTML = 'Question field ' + category.fields[i] + ' cannot contain empty data.';
+            return;
+        }
         for (let j = 0; j < fieldData.length; j++) {
             data[j] = fieldData[j].data.value;
         }
         fields[i] = new Field({ name: category.fields[i], question: answer, data: data });
     }
 
-    let fieldDocIds = [];
-    for (let i = 0; i < fields.length; i++) {
-        fieldDocIds[i] = await FirebaseController.addDocument(Constant.collectionNames.FIELDS, fields[i]);
-    }
+    const label = Util.disableButton(Element.addQuestionButton);
 
-    const question = new Question({ answer: answer, info: info, category: cat, fields: fieldDocIds });
+    let fieldDocIds = [];
+    try {
+        for (let i = 0; i < fields.length; i++) {
+            fieldDocIds[i] = await FirebaseController.addDocument(Constant.collectionNames.FIELDS, fields[i]);
+        }
+        categoryList = await FirebaseController.getCollection(Constant.collectionNames.CATEGORIES);
+    } catch (e) {
+        if (Constant.DEV) console.log(e);
+        for (let i = 0; i < fieldDocIds.length; i++) {
+            await FirebaseController.deleteDocument(Constant.collectionNames.FIELDS, fieldDocIds[i]);
+        }
+        Util.enableButton(Element.addQuestionButton, label);
+        categoryList = await FirebaseController.getCollection(Constant.collectionNames.CATEGORIES);
+        resetModalAddQuestion();
+        Util.display('Add failed', JSON.stringify(e));
+    }
+    
+
+    const question = new Question({ answer: answer, info: info, category: category.name, fields: fieldDocIds });
 
     const errors = await question.validate();
 
     Element.addQuestionErrorAnswer.innerHTML = errors.answer ? errors.answer : '';
     Element.addQuestionErrorInfo.innerHTML = errors.info ? errors.info : '';
     Element.addQuestionErrorCategory.innerHTML = errors.category ? errors.category : '';
-    Element.addQuestionErrorField.innerHTML = errors.field ? errors.field : '';
+    Element.addQuestionErrorField.innerHTML = errors.fields ? errors.fields : '';
 
     if (Object.keys(errors).length != 0) {
         Util.enableButton(Element.addQuestionButton, label);
@@ -245,6 +275,7 @@ async function addNewQuestion() {
 
     try {
         let questionId = await FirebaseController.addDocument(Constant.collectionNames.QUESTIONS, question);
+        console.log(category);
         category.questions.push(questionId);
         await FirebaseController.editDocument(Constant.collectionNames.CATEGORIES, category.docId, category);
         Util.enableButton(Element.addQuestionButton, label);
@@ -252,6 +283,7 @@ async function addNewQuestion() {
         resetModalAddQuestion();
         Util.display('Add successful', `${question.answer} has been added.`);
         showSpinner();
+        categoryList = await FirebaseController.getCollection(Constant.collectionNames.CATEGORIES);
         questionList = await FirebaseController.getFirstPage(Constant.collectionNames.QUESTIONS);
         showPrev = false;
         showNext = await FirebaseController.getShowNext();
@@ -260,6 +292,7 @@ async function addNewQuestion() {
     } catch (e) {
         if (Constant.DEV) console.log(e);
         Util.enableButton(Element.addQuestionButton, label);
+        categoryList = await FirebaseController.getCollection(Constant.collectionNames.CATEGORIES);
         resetModalAddQuestion();
         Util.display('Add failed', JSON.stringify(e));
     }
@@ -269,12 +302,12 @@ async function addNewQuestion() {
 function buildFieldDiv() {
     for (let i = 0; i < category.fields.length; i++) {
         Element.addQuestionFieldsDiv.innerHTML += `
-            <div class="add-question-field" id="add-question-field-${category.fields[i]}">
-                <h5>${category.fields[i]}</h5>
+            <div class="add-question-field py-3" id="add-question-field-${category.fields[i]}">
+                <h5 class="mb-0">${category.fields[i]}</h5>
                 <div id="add-question-field-data-div-${category.fields[i]}"></div>
                 <div class="d-flex flex-row p-1">
                     <input class="bg-dark text-light" style="width: 80%;" id="add-question-field-data-input-${category.fields[i]}" type="text"
-                        name="data" placeholder="Data Name">
+                        name="data" placeholder="Data">
                     <div style="width: 10%;"></div>
                     <form method="post" class="add-question-field-data-button" style="width: 10%;">
                         <input type="hidden" name="field" value="${category.fields[i]}">
@@ -325,6 +358,7 @@ function buildFieldDiv() {
                     `;
             }
             addDataDeleteListeners();
+            addFieldDataInput.focus();
         });
     }
 }
@@ -369,4 +403,6 @@ function resetModalAddQuestion() {
     Element.addQuestionErrorCategory.innerHTML = '';
     Element.addQuestionFieldsDiv.innerHTML = '';
     Element.addQuestionErrorField.innerHTML = '';
+
+    category = null;
 }

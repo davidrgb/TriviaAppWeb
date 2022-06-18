@@ -1,6 +1,3 @@
-import * as FirebaseController from '../controller/firebase_controller.js';
-import * as Constant from './constant.js';
-
 export class Question {
     constructor(data) {
         this.answer = data.answer;
@@ -10,6 +7,7 @@ export class Question {
     }
 
     async validate() {
+        console.log
         const errors = {};
         if (!this.answer)
             errors.answer = 'Question answer is required.';
@@ -17,17 +15,6 @@ export class Question {
             errors.info = 'Question info is required.';
         if (!this.category)
             errors.category = 'Question category is required.';
-        const categories = await FirebaseController.getCollection(Constant.collectionNames.CATEGORIES);
-        for (let i = 0; i < categories.length; i++) {
-            let categoryFound = false;
-            if (this.category === categories[i].name) {
-                categoryFound = true;
-                i = categories.length;
-            }
-            else if (i === categories.length - 1 && !categoryFound) {
-                errors.category = 'Question category not found.';
-            }
-        }
         if (!this.fields || this.fields.length < 1)
             errors.fields = 'Question field required.';
         for (let i = 0; i < this.fields.length; i++) {

@@ -237,12 +237,10 @@ export async function deleteDocument(collection, docId) {
         lastId = previouslastId;
         documents = await getNextPage(collection);
         page--;
-        await cf_deleteDocument({docId, collection});
         return documents;
     }
     else {
         documents = await getFirstPage(collection);
-        await cf_deleteDocument({docId, collection});
         return documents;
     }
 }

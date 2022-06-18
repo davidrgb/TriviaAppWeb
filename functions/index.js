@@ -393,6 +393,17 @@ async function editDocument(data, context) {
         throw new functions.https.HttpsError('unauthenticated', 'Only admin may invoke this function');
     }
 
+    /*if (data.collection === Constant.collectionNames.CATEGORIES) {
+        const category = await admin.firestore().collection(Constant.collectionNames.CATEGORIES).doc(data.docId).get();
+        const questionSnapShot = await admin.firestore().collection(Constant.collectionNames.QUESTIONS).where('category', '==', category.name).get();
+        for (let i = 0; i < questionSnapShot.docs.length; i++) {
+            for (let j = 0; j < questionSnapShot.docs[i].data().fields.length; j++) {
+                await admin.firestore().collection(Constant.collectionNames.FIELDS).doc(questionSnapShot.docs[i].data().fields[j]).delete();
+            }
+            await admin.firestore().collection(Constant.collectionNames.QUESTIONS).doc(questionSnapShot.docs[i].data().docId).delete();
+        }
+    }*/
+
     try {
         await admin.firestore().collection(data.collection)
             .doc(data.docId)
@@ -410,6 +421,34 @@ async function deleteDocument(data, context) {
     }
 
     try {
+        if (data.collection === Constant.collectionNames.CATEGORIES) {
+            const category = await admin.firestore().collection(Constant.collectionNames.CATEGORIES).doc(data.docId).get();
+            const questionSnapShot = await admin.firestore().collection(Constant.collectionNames.QUESTIONS).where('category', '==', category.data().name).get();
+            for (let i = 0; i < questionSnapShot.docs.length; i++) {
+                const { fields } = questionSnapShot.docs[i].data();
+                for (let j = 0; j < fields.length; j++) {
+                    await admin.firestore().collection(Constant.collectionNames.FIELDS).doc(fields[j].data).delete();
+                }
+                await admin.firestore().collection(Constant.collectionNames.QUESTIONS).doc(questionSnapShot.docs[i].id).delete();
+            }
+        }
+        else if (data.collection === Constant.collectionNames.QUESTIONS) {
+            const question = await admin.firestore().collection(Constant.collectionNames.QUESTIONS).doc(data.docId).get();
+            const categorySnapShot = await admin.firestore().collection(Constant.collectionNames.CATEGORIES).where('name', '==', question.data().category).get();
+            for (let i = 0; i < categorySnapShot.docs.length; i++) {
+                const { name, fields, questions } = categorySnapShot.docs[i].data();
+                let updatedQuestions = [];
+                for (let j = 0; j < questions.length; j++) {
+                    if (data.docId !== questions[j].data) updatedQuestions.push({data: questions[j].data});
+                }
+                const update = { name: name, fields: fields, questions: updatedQuestions };
+                await admin.firestore().collection(Constant.collectionNames.CATEGORIES).doc(categorySnapShot.docs[i].data().docId).update(update);
+            }
+            const { fields } = question.data();
+            for (let i = 0; i < fields.length; i++) {
+                await admin.firestore().collection(Constant.collectionNames.FIELDS).doc(fields[i].data).delete();
+            }
+        }
         await admin.firestore().collection(data.collection)
             .doc(data.docId)
             .delete();
