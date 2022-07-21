@@ -194,6 +194,47 @@
     </div>
   </div>
 
+  <div class="modal fade" id="modal-edit-question" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="modal-edit-question-label" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark border-light text-light">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modal-edit-question-label">Edit Question</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="bg-dark text-light" id="edit-question">
+            <div class="px-1">
+              <input class="bg-dark text-light" id="edit-question-answer" type="text" name="name" placeholder="Name">
+              <p id="edit-question-error-answer"></p>
+            </div>
+            <div class="px-1">
+              <input class="bg-dark text-light" id="edit-question-info" type="text" name="info" placeholder="Info">
+              <p id="edit-question-error-info"></p>
+            </div>
+            <div class="dropdown px-1" id="edit-question-category">
+              <button class="btn btn-outline-light dropdown-toggle" id="edit-question-category-dropdown-button"
+                type="button" data-bs-toggle="dropdown" aria-expanded="false">Category</button>
+              <div class="dropdown-menu dropdown-menu-dark" id="edit-question-category-dropdown"
+                aria-labelledby="edit-question-category-dropdown-button">
+              </div>
+            </div>
+            <div class="px-1">
+              <p id="edit-question-error-category"></p>
+            </div>
+            <div class="px-1" id="edit-question-fields-div"></div>
+            <div class="px-1">
+              <p id="edit-question-error-field"></p>
+            </div>
+            <div class="px-1">
+              <button id="edit-question-button" type="button" class="btn btn-outline-light">Edit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="root" class="bg-dark m-3"></div>
 </body>
 

@@ -37,7 +37,6 @@ export async function lobbies_page() {
 
 async function buildHTML() {
     let html = `
-        <h1 class="text-light">Lobbies</h1>
         <button class="btn btn-outline-light" id="add-button">Add Lobby</button>
     `;
 

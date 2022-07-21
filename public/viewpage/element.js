@@ -15,6 +15,7 @@ export const modalAddCategory = new bootstrap.Modal(document.getElementById('mod
 export const modalEditCategory = new bootstrap.Modal(document.getElementById('modal-edit-category'), {backdrop: 'static'});
 
 export const modalAddQuestion = new bootstrap.Modal(document.getElementById('modal-add-question'), {backdrop: 'static'});
+export const modalEditQuestion = new bootstrap.Modal(document.getElementById('modal-edit-question'), {backdrop: 'static'});
 
 export const addCategoryName = document.getElementById('add-category-name');
 export const addCategoryFieldsDiv = document.getElementById('add-category-fields-div');
@@ -45,3 +46,15 @@ export const addQuestionErrorInfo = document.getElementById('add-question-error-
 export const addQuestionErrorCategory = document.getElementById('add-question-error-category');
 export const addQuestionErrorField = document.getElementById('add-question-error-field');
 export const addQuestionButton = document.getElementById('add-question-button');
+
+export const editQuestionAnswer = document.getElementById('edit-question-answer');
+export const editQuestionInfo = document.getElementById('edit-question-info');
+export const editQuestionCategory = document.getElementById('edit-question-category');
+export const editQuestionCategoryDropdown = document.getElementById('edit-question-category-dropdown');
+export const editQuestionCategoryDropdownButton = document.getElementById('edit-question-category-dropdown-button');
+export const editQuestionFieldsDiv = document.getElementById('edit-question-fields-div');
+export const editQuestionErrorAnswer = document.getElementById('edit-question-error-answer');
+export const editQuestionErrorInfo = document.getElementById('edit-question-error-info');
+export const editQuestionErrorCategory = document.getElementById('edit-question-error-category');
+export const editQuestionErrorField = document.getElementById('edit-question-error-field');
+export const editQuestionButton = document.getElementById('edit-question-button');

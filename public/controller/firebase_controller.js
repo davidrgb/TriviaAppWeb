@@ -193,6 +193,11 @@ export async function getDocument(collection, docId) {
             document.docId = result.data.docId;
             return document;
         }
+        else if (collection === Constant.collectionNames.FIELDS) {
+            let document = new Field(result.data);
+            document.docId = result.data.docId;
+            return document;
+        }
     };
 }
 
@@ -243,6 +248,11 @@ export async function deleteDocument(collection, docId) {
         documents = await getFirstPage(collection);
         return documents;
     }
+}
+
+export async function deleteField(docId) {
+    let collection = Constant.collectionNames.FIELDS;
+    await cf_deleteDocument({collection, docid});
 }
 
 export async function getPage() {
