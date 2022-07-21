@@ -372,7 +372,10 @@ async function editCategory() {
     for (let i = 0; i < Element.editCategoryFields.length; i++) {
         fields[i] = Element.editCategoryFields[i].field.value;
     }
-    const questions = [];
+
+    const cat = await FirebaseController.getDocument(Constant.collectionNames.CATEGORIES, docId);
+
+    const questions = cat.questions;
 
     const category = new Category({ name, fields, questions });
 
@@ -388,6 +391,10 @@ async function editCategory() {
 
     try {
         await FirebaseController.editDocument(Constant.collectionNames.CATEGORIES, docId, category);
+        for (let i = 0; i < category.questions.length; i++) {
+            let update = {category: category.name};
+            await FirebaseController.editDocument(Constant.collectionNames.QUESTIONS, category.questions[i].data, update);
+        }
         docId = '';
         Util.enableButton(Element.editCategoryButton, label);
         Element.modalEditCategory.hide();
