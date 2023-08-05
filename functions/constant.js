@@ -2,6 +2,7 @@ exports.DEV = true;
 
 exports.adminEmails = [
     'admin@test.com',
+    'davidrussellrgb@gmail.com',
 ]
 
 exports.collectionNames = {
